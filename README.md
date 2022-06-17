@@ -6,6 +6,7 @@ Reducing Boilerplate Code with il-contract-api maven plugin
 ## Key Features
 * Auto generation by maven compile phase
 * Auto detection commons classes
+* Generate lombok based java beans
 * Custom Field mapping
 
 ## How to use
@@ -38,9 +39,10 @@ Reducing Boilerplate Code with il-contract-api maven plugin
 ```
 
 ## Output 
-> ./target/generated/src/main/de/microtema/model/BusinessCustomer.java 
-> ./target/generated/src/main/de/microtema/model/Customer.java 
-> ./target/generated/src/main/de/microtema/model/PrivateCustomer.java 
+* ./target/generated/src/main/de/microtema/model/BusinessCustomer.java 
+* ./target/generated/src/main/de/microtema/model/Customer.java 
+* ./target/generated/src/main/de/microtema/model/PrivateCustomer.java 
+
 > NOTE: This is an example file.
 
 ```
@@ -61,7 +63,7 @@ public class BusinessCustomer extends Customer {
     /**
     * Der Firmenname
     */
-	@JsonProperty("COMPANY")
+    @JsonProperty("COMPANY")
     private String company;
 
 }
