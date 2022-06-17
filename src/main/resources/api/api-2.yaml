@@ -1,0 +1,925 @@
+entities:
+  - name: PrivateCustomer
+    description: Privatekunde
+    version: 10
+    system_id: remedy
+    access:
+      allow:
+        - system.resolve
+        - system.norad
+    contacts:
+      - type: owner
+        name: Helena Göbel
+        company: 1&1 Versatel
+      - type: owner
+        name: Dirk Pauls
+        company: 1&1 Versatel
+    type: GDP
+    systemReadQuery: |
+      SELECT
+        k.REGION || '-' || k.SREFNR AS ID,
+        k.KOOPERATIONSPARTNER AS TENANT_ID,
+        CASE
+          WHEN k.name2 IS NOT NULL AND k.name2 != 'n.n.' THEN
+          CASE
+            WHEN k.name1 IS NOT NULL AND k.name1 != 'n.n.' THEN k.name2 || ' ' || k.name1
+        	  ELSE k.name2
+        	END ELSE k.name1
+        END AS COMPANY,
+        decode(k.name2, null, k.name3, 'n.n.', k.name3, k.name1) CONTACTPERSON,
+        CASE WHEN k.KUNDENGRUPPE = 'closed' THEN NULL ELSE k.KUNDENGRUPPE END AS GROUP_ID,
+        k.BETREUUNGSLINIE AS CARELINE,
+        decode_deb_gkdtyp(k.GKD_TYP) AS MASTER_TYPE,
+        decode_deb_kundentyp(k.KUNDENTYP) AS CUSTOMER_TYPE,
+        k.KUNDENTYP AS CUSTOMER_TYPE_ID,
+        decode_deb_kundentyp_fibu(k.KUNDENTYP_FIBU) AS FINANCE_TYPE,
+        p.BONITAET AS CREDIT_RATING,
+        CASE
+          WHEN k.CARRIER IS NULL THEN 0
+          WHEN k.CARRIER = 0 THEN 1
+          ELSE 0
+        END AS IS_CARRIER,
+        k.KDBETR_MANR AS CRM_USER_ID,
+        k.MODIFIED_DATE AS MODIFIED_AT,
+        k.CREATE_DATE AS CREATED_AT,
+        CASE
+          WHEN k.TECHKEYACCOUNT IS NULL THEN 0
+          WHEN k.TECHKEYACCOUNT = 0 THEN 1
+          ELSE 0
+        END AS IS_TECH_KEYACCOUNT,
+        k.FIRMEN_ID AS CARRIER_ID,
+        k.FIRMA AS CARRIER_NAME,
+        k.HAUPTSREFNR AS BILLING_VIA_CUSTOMER_ID,
+        k.GKD_NR AS MAJOR_CUSTOMER_ID,
+        '+49' AS PHONE_COUNTRY,
+        ltrim(k.A_Vorwahl, '0') AS PHONE_AREACODE,
+        k.A_Durchwahl AS PHONE_EXTENSION,
+        k.Email1 AS EMAIL,
+        k.Zimmer1 AS ROOM,
+        k.ZIMMER_NR1 AS ROOM_NUMBER,
+        k.STR1 AS STREET,
+        k.HAUSNR1 AS HOUSENUMBER,
+        k.HAUSNR_ZUS1 AS HOUSENUMBER_AFFIX,
+        k.ORT1 AS CITY,
+        k.Ortsnamenszusatz AS CITY_AFFIX,
+        k.PLZ_CODE AS POSTAL_CODE,
+        CASE
+          WHEN k.LAND_KUERZEL = 'D' THEN 'DEU'
+          WHEN k.LAND_KUERZEL = 'CH' THEN 'CHE'
+          WHEN k.LAND_KUERZEL = 'DK' THEN 'DNK'
+          WHEN k.LAND_KUERZEL = 'AUS' THEN 'AUS'
+          WHEN k.LAND_KUERZEL = 'RUS' THEN 'RUS'
+          WHEN k.LAND_KUERZEL = 'CZ' THEN 'CZE'
+          ELSE ''
+        END AS COUNTRY,
+        k.FREMDNR AS EXTERNAL_ID,
+        k.void AS SALESPARTNER_ID,
+        k.Void_2 AS SALESPARTNER_SUB_ID,
+        CASE WHEN k.Rechnungssplit = 0 THEN 1 ELSE 0 END AS INVOICE_SPLIT,
+        d.OPT_IN_DATUM AS OPT_IN_UPDATED_AT,
+        d.opt_in AS OPT_IN_STATUS_DESCRIPTION,
+        CASE
+          WHEN d.opt_in LIKE '%MAIL%' THEN 1
+          WHEN d.opt_in LIKE '%OPT-In nicht eingeholt%' THEN NULL
+          WHEN d.opt_in LIKE '%In Klaerung%' THEN NULL
+          WHEN d.opt_in IS NULL THEN NULL
+          ELSE 0
+        END AS OPT_IN_MAIL,
+        CASE
+          WHEN d.opt_in LIKE '%SMS%' THEN 1
+          WHEN d.opt_in LIKE '%OPT-In nicht eingeholt%' THEN NULL
+          WHEN d.opt_in LIKE '%In Klaerung%' THEN NULL
+          WHEN d.opt_in IS NULL THEN NULL
+          ELSE 0
+        END AS OPT_IN_SMS,
+        CASE
+          WHEN d.opt_in LIKE '%TELEFON%' THEN 1
+          WHEN d.opt_in LIKE '%OPT-In nicht eingeholt%' THEN NULL
+          WHEN d.opt_in LIKE '%In Klaerung%' THEN NULL
+          WHEN d.opt_in IS NULL THEN NULL
+          ELSE 0
+        END AS OPT_IN_CALL,
+        CASE
+          WHEN d.opt_in LIKE '%FAX%' THEN 1
+          WHEN d.opt_in LIKE '%OPT-In nicht eingeholt%' THEN NULL
+          WHEN d.opt_in LIKE '%In Klaerung%' THEN NULL
+          WHEN d.opt_in IS NULL THEN NULL
+          ELSE 0
+        END AS OPT_IN_FAX,
+        CASE
+          WHEN d.opt_in LIKE '%POST%' THEN 1
+          WHEN d.opt_in LIKE '%OPT-In nicht eingeholt%' THEN NULL
+          WHEN d.opt_in LIKE '%In Klaerung%' THEN NULL
+          WHEN d.opt_in IS NULL THEN NULL
+          ELSE 0
+        END AS OPT_IN_POST,
+        CASE
+          WHEN d.opt_in LIKE '%TERMIN%' THEN 1
+          WHEN d.opt_in LIKE '%OPT-In nicht eingeholt%' THEN NULL
+          WHEN d.opt_in LIKE '%In Klaerung%' THEN NULL
+          WHEN d.opt_in IS NULL THEN NULL
+          ELSE 0
+        END AS OPT_IN_MEETING,
+        CASE
+          WHEN d.opt_in LIKE '%OPT-In nicht eingeholt%' THEN 0
+          WHEN d.opt_in LIKE '%In Klaerung%' THEN NULL
+          WHEN d.opt_in IS NULL THEN NULL
+          ELSE 1
+        END AS OPT_IN_STATUS,
+        d.A_FLAG AS SOURCECOUNTER,
+        /* NEU */
+        d.TITEL1_BRANCHE AS BUSINESS_FIELD,
+        d.ANGELEGT_VON AS CREATED_BY,
+        d.D_FLAG_DATUM AS DELETED_AT,
+        d.DATA_FROM AS MODIFIED_BY,
+        d.STEUER_NR AS TAX_CODE,
+        CASE WHEN d.A1UND1_KUNDE IS NULL THEN 0 ELSE 1 END AS IS_1UND1,
+        d.ORT_KUNDENBETREUUNG AS CARE_REGION,
+        d.D_FLAG AS IS_DELETED,
+        k.DEBITORSTATUS AS CONTRACT_MAX_STATUS,
+        /* LEGACY */
+        k.SREFNR AS LEGACY_SREFNR,
+        k.REGION AS LEGACY_REGION,
+        k.LAND_KUERZEL AS LEGACY_LAND_KUERZEL
+      FROM ARADMIN.KT_HD_SUPERKUNDE_PDB k
+      JOIN KT.DEBITOR d ON d.REFNR = k.SREFNR
+      JOIN ARADMIN.KT_HD_PERSDATEN p ON k.SREFNR =p.REFNR
+      WHERE k.KUNDENTYP_FIBU != 0
+        AND k.KUNDENTYP_FIBU != 16
+        AND {{{ ID @ k.REGION || '-' || k.SREFNR }}}
+        AND {{{ LEGACY_SREFNR @ k.SREFNR }}}
+        AND {{{ LEGACY_REGION @ k.REGION }}}
+      UNION ALL
+      SELECT
+        k.REGION || '-' || k.SREFNR AS ID,
+        k.KOOPERATIONSPARTNER AS TENANT_ID,
+        CASE
+          WHEN k.name2 IS NOT NULL AND k.name2 != 'n.n.' THEN
+          CASE
+            WHEN k.name1 IS NOT NULL AND k.name1 != 'n.n.' THEN k.name2 || ' ' || k.name1
+        	  ELSE k.name2
+        	END ELSE k.name1
+        END AS COMPANY,
+        decode(k.name2, null, k.name3, 'n.n.', k.name3, k.name1) CONTACTPERSON,
+        CASE WHEN k.KUNDENGRUPPE = 'closed' THEN NULL ELSE k.KUNDENGRUPPE END AS GROUP_ID,
+        k.BETREUUNGSLINIE AS CARELINE,
+        decode_deb_gkdtyp(k.GKD_TYP) AS MASTER_TYPE,
+        decode_deb_kundentyp(k.KUNDENTYP) AS CUSTOMER_TYPE,
+        k.KUNDENTYP AS CUSTOMER_TYPE_ID,
+        decode_deb_kundentyp_fibu(k.KUNDENTYP_FIBU) AS FINANCE_TYPE,
+        p.BONITAET AS CREDIT_RATING,
+        CASE
+          WHEN k.CARRIER IS NULL THEN 0
+          WHEN k.CARRIER = 0 THEN 1
+          ELSE 0
+        END AS IS_CARRIER,
+        k.KDBETR_MANR AS CRM_USER_ID,
+        k.MODIFIED_DATE AS MODIFIED_AT,
+        k.CREATE_DATE AS CREATED_AT,
+        CASE
+          WHEN k.TECHKEYACCOUNT IS NULL THEN 0
+          WHEN k.TECHKEYACCOUNT = 0 THEN 1
+          ELSE 0
+        END AS IS_TECH_KEYACCOUNT,
+        k.FIRMEN_ID AS CARRIER_ID,
+        k.FIRMA AS CARRIER_NAME,
+        k.HAUPTSREFNR AS BILLING_VIA_CUSTOMER_ID,
+        k.GKD_NR AS MAJOR_CUSTOMER_ID,
+        '+49' AS PHONE_COUNTRY,
+        ltrim(k.A_Vorwahl, '0') AS PHONE_AREACODE,
+        k.A_Durchwahl AS PHONE_EXTENSION,
+        k.Email1 AS EMAIL,
+        k.Zimmer1 AS ROOM,
+        k.ZIMMER_NR1 AS ROOM_NUMBER,
+        k.STR1 AS STREET,
+        k.HAUSNR1 AS HOUSENUMBER,
+        k.HAUSNR_ZUS1 AS HOUSENUMBER_AFFIX,
+        k.ORT1 AS CITY,
+        k.Ortsnamenszusatz AS CITY_AFFIX,
+        k.PLZ_CODE AS POSTAL_CODE,
+        CASE
+          WHEN k.LAND_KUERZEL = 'D' THEN 'DEU'
+          WHEN k.LAND_KUERZEL = 'CH' THEN 'CHE'
+          WHEN k.LAND_KUERZEL = 'DK' THEN 'DNK'
+          WHEN k.LAND_KUERZEL = 'AUS' THEN 'AUS'
+          WHEN k.LAND_KUERZEL = 'RUS' THEN 'RUS'
+          WHEN k.LAND_KUERZEL = 'CZ' THEN 'CZE'
+          ELSE ''
+        END AS COUNTRY,
+        k.FREMDNR AS EXTERNAL_ID,
+        k.void AS SALESPARTNER_ID,
+        k.Void_2 AS SALESPARTNER_SUB_ID,
+        CASE WHEN k.Rechnungssplit = 0 THEN 1 ELSE 0 END AS INVOICE_SPLIT,
+        d.OPT_IN_DATUM AS OPT_IN_UPDATED_AT,
+        d.opt_in AS OPT_IN_STATUS_DESCRIPTION,
+        CASE
+          WHEN d.opt_in LIKE '%MAIL%' THEN 1
+          WHEN d.opt_in LIKE '%OPT-In nicht eingeholt%' THEN NULL
+          WHEN d.opt_in LIKE '%In Klaerung%' THEN NULL
+          WHEN d.opt_in IS NULL THEN NULL
+          ELSE 0
+        END AS OPT_IN_MAIL,
+        CASE
+          WHEN d.opt_in LIKE '%SMS%' THEN 1
+          WHEN d.opt_in LIKE '%OPT-In nicht eingeholt%' THEN NULL
+          WHEN d.opt_in LIKE '%In Klaerung%' THEN NULL
+          WHEN d.opt_in IS NULL THEN NULL
+          ELSE 0
+        END AS OPT_IN_SMS,
+        CASE
+          WHEN d.opt_in LIKE '%TELEFON%' THEN 1
+          WHEN d.opt_in LIKE '%OPT-In nicht eingeholt%' THEN NULL
+          WHEN d.opt_in LIKE '%In Klaerung%' THEN NULL
+          WHEN d.opt_in IS NULL THEN NULL
+          ELSE 0
+        END AS OPT_IN_CALL,
+        CASE
+          WHEN d.opt_in LIKE '%FAX%' THEN 1
+          WHEN d.opt_in LIKE '%OPT-In nicht eingeholt%' THEN NULL
+          WHEN d.opt_in LIKE '%In Klaerung%' THEN NULL
+          WHEN d.opt_in IS NULL THEN NULL
+          ELSE 0
+        END AS OPT_IN_FAX,
+        CASE
+          WHEN d.opt_in LIKE '%POST%' THEN 1
+          WHEN d.opt_in LIKE '%OPT-In nicht eingeholt%' THEN NULL
+          WHEN d.opt_in LIKE '%In Klaerung%' THEN NULL
+          WHEN d.opt_in IS NULL THEN NULL
+          ELSE 0
+        END AS OPT_IN_POST,
+        CASE
+          WHEN d.opt_in LIKE '%TERMIN%' THEN 1
+          WHEN d.opt_in LIKE '%OPT-In nicht eingeholt%' THEN NULL
+          WHEN d.opt_in LIKE '%In Klaerung%' THEN NULL
+          WHEN d.opt_in IS NULL THEN NULL
+          ELSE 0
+        END AS OPT_IN_MEETING,
+        CASE
+          WHEN d.opt_in LIKE '%OPT-In nicht eingeholt%' THEN 0
+          WHEN d.opt_in LIKE '%In Klaerung%' THEN NULL
+          WHEN d.opt_in IS NULL THEN NULL
+          ELSE 1
+        END AS OPT_IN_STATUS,
+        d.A_FLAG AS SOURCECOUNTER,
+        /* NEU */
+        d.TITEL1_BRANCHE AS BUSINESS_FIELD,
+        d.ANGELEGT_VON AS CREATED_BY,
+        d.D_FLAG_DATUM AS DELETED_AT,
+        d.DATA_FROM AS MODIFIED_BY,
+        d.STEUER_NR AS TAX_CODE,
+        CASE WHEN d.A1UND1_KUNDE IS NULL THEN 0 ELSE 1 END AS IS_1UND1,
+        d.ORT_KUNDENBETREUUNG AS CARE_REGION,
+        d.D_FLAG AS IS_DELETED,
+        k.DEBITORSTATUS AS CONTRACT_MAX_STATUS,
+        /* LEGACY */
+        k.SREFNR AS LEGACY_SREFNR,
+        k.REGION AS LEGACY_REGION,
+        k.LAND_KUERZEL AS LEGACY_LAND_KUERZEL
+      FROM ARADMIN.VT_HD_SUPERKUNDE_PDB k
+      JOIN VT.DEBITOR d ON d.REFNR = k.SREFNR
+      JOIN ARADMIN.VT_HD_PERSDATEN p ON k.SREFNR =p.REFNR
+      WHERE k.KUNDENTYP_FIBU != 0
+        AND k.KUNDENTYP_FIBU != 16
+        AND {{{ ID @ k.REGION || '-' || k.SREFNR }}}
+        AND {{{ LEGACY_SREFNR @ k.SREFNR }}}
+        AND {{{ LEGACY_REGION @ k.REGION }}}
+      UNION ALL
+      SELECT
+        k.REGION || '-' || k.SREFNR AS ID,
+        k.KOOPERATIONSPARTNER AS TENANT_ID,
+        CASE
+          WHEN k.name2 IS NOT NULL AND k.name2 != 'n.n.' THEN
+          CASE
+            WHEN k.name1 IS NOT NULL AND k.name1 != 'n.n.' THEN k.name2 || ' ' || k.name1
+        	  ELSE k.name2
+        	END ELSE k.name1
+        END AS COMPANY,
+        decode(k.name2, null, k.name3, 'n.n.', k.name3, k.name1) CONTACTPERSON,
+        CASE WHEN k.KUNDENGRUPPE = 'closed' THEN NULL ELSE k.KUNDENGRUPPE END AS GROUP_ID,
+        k.BETREUUNGSLINIE AS CARELINE,
+        decode_deb_gkdtyp(k.GKD_TYP) AS MASTER_TYPE,
+        decode_deb_kundentyp(k.KUNDENTYP) AS CUSTOMER_TYPE,
+        k.KUNDENTYP AS CUSTOMER_TYPE_ID,
+        decode_deb_kundentyp_fibu(k.KUNDENTYP_FIBU) AS FINANCE_TYPE,
+        p.BONITAET AS CREDIT_RATING,
+        CASE
+          WHEN k.CARRIER IS NULL THEN 0
+          WHEN k.CARRIER = 0 THEN 1
+          ELSE 0
+        END AS IS_CARRIER,
+        k.KDBETR_MANR AS CRM_USER_ID,
+        k.MODIFIED_DATE AS MODIFIED_AT,
+        k.CREATE_DATE AS CREATED_AT,
+        CASE
+          WHEN k.TECHKEYACCOUNT IS NULL THEN 0
+          WHEN k.TECHKEYACCOUNT = 0 THEN 1
+          ELSE 0
+        END AS IS_TECH_KEYACCOUNT,
+        k.FIRMEN_ID AS CARRIER_ID,
+        k.FIRMA AS CARRIER_NAME,
+        k.HAUPTSREFNR AS BILLING_VIA_CUSTOMER_ID,
+        k.GKD_NR AS MAJOR_CUSTOMER_ID,
+        '+49' AS PHONE_COUNTRY,
+        ltrim(k.A_Vorwahl, '0') AS PHONE_AREACODE,
+        k.A_Durchwahl AS PHONE_EXTENSION,
+        k.Email1 AS EMAIL,
+        k.Zimmer1 AS ROOM,
+        k.ZIMMER_NR1 AS ROOM_NUMBER,
+        k.STR1 AS STREET,
+        k.HAUSNR1 AS HOUSENUMBER,
+        k.HAUSNR_ZUS1 AS HOUSENUMBER_AFFIX,
+        k.ORT1 AS CITY,
+        k.Ortsnamenszusatz AS CITY_AFFIX,
+        k.PLZ_CODE AS POSTAL_CODE,
+        CASE
+          WHEN k.LAND_KUERZEL = 'D' THEN 'DEU'
+          WHEN k.LAND_KUERZEL = 'CH' THEN 'CHE'
+          WHEN k.LAND_KUERZEL = 'DK' THEN 'DNK'
+          WHEN k.LAND_KUERZEL = 'AUS' THEN 'AUS'
+          WHEN k.LAND_KUERZEL = 'RUS' THEN 'RUS'
+          WHEN k.LAND_KUERZEL = 'CZ' THEN 'CZE'
+          ELSE ''
+        END AS COUNTRY,
+        k.FREMDNR AS EXTERNAL_ID,
+        k.void AS SALESPARTNER_ID,
+        k.Void_2 AS SALESPARTNER_SUB_ID,
+        CASE WHEN k.Rechnungssplit = 0 THEN 1 ELSE 0 END AS INVOICE_SPLIT,
+        d.OPT_IN_DATUM AS OPT_IN_UPDATED_AT,
+        d.opt_in AS OPT_IN_STATUS_DESCRIPTION,
+        CASE
+          WHEN d.opt_in LIKE '%MAIL%' THEN 1
+          WHEN d.opt_in LIKE '%OPT-In nicht eingeholt%' THEN NULL
+          WHEN d.opt_in LIKE '%In Klaerung%' THEN NULL
+          WHEN d.opt_in IS NULL THEN NULL
+          ELSE 0
+        END AS OPT_IN_MAIL,
+        CASE
+          WHEN d.opt_in LIKE '%SMS%' THEN 1
+          WHEN d.opt_in LIKE '%OPT-In nicht eingeholt%' THEN NULL
+          WHEN d.opt_in LIKE '%In Klaerung%' THEN NULL
+          WHEN d.opt_in IS NULL THEN NULL
+          ELSE 0
+        END AS OPT_IN_SMS,
+        CASE
+          WHEN d.opt_in LIKE '%TELEFON%' THEN 1
+          WHEN d.opt_in LIKE '%OPT-In nicht eingeholt%' THEN NULL
+          WHEN d.opt_in LIKE '%In Klaerung%' THEN NULL
+          WHEN d.opt_in IS NULL THEN NULL
+          ELSE 0
+        END AS OPT_IN_CALL,
+        CASE
+          WHEN d.opt_in LIKE '%FAX%' THEN 1
+          WHEN d.opt_in LIKE '%OPT-In nicht eingeholt%' THEN NULL
+          WHEN d.opt_in LIKE '%In Klaerung%' THEN NULL
+          WHEN d.opt_in IS NULL THEN NULL
+          ELSE 0
+        END AS OPT_IN_FAX,
+        CASE
+          WHEN d.opt_in LIKE '%POST%' THEN 1
+          WHEN d.opt_in LIKE '%OPT-In nicht eingeholt%' THEN NULL
+          WHEN d.opt_in LIKE '%In Klaerung%' THEN NULL
+          WHEN d.opt_in IS NULL THEN NULL
+          ELSE 0
+        END AS OPT_IN_POST,
+        CASE
+          WHEN d.opt_in LIKE '%TERMIN%' THEN 1
+          WHEN d.opt_in LIKE '%OPT-In nicht eingeholt%' THEN NULL
+          WHEN d.opt_in LIKE '%In Klaerung%' THEN NULL
+          WHEN d.opt_in IS NULL THEN NULL
+          ELSE 0
+        END AS OPT_IN_MEETING,
+        CASE
+          WHEN d.opt_in LIKE '%OPT-In nicht eingeholt%' THEN 0
+          WHEN d.opt_in LIKE '%In Klaerung%' THEN NULL
+          WHEN d.opt_in IS NULL THEN NULL
+          ELSE 1
+        END AS OPT_IN_STATUS,
+        d.A_FLAG AS SOURCECOUNTER,
+        /* NEU */
+        d.TITEL1_BRANCHE AS BUSINESS_FIELD,
+        d.ANGELEGT_VON AS CREATED_BY,
+        d.D_FLAG_DATUM AS DELETED_AT,
+        d.DATA_FROM AS MODIFIED_BY,
+        d.STEUER_NR AS TAX_CODE,
+        CASE WHEN d.A1UND1_KUNDE IS NULL THEN 0 ELSE 1 END AS IS_1UND1,
+        d.ORT_KUNDENBETREUUNG AS CARE_REGION,
+        d.D_FLAG AS IS_DELETED,
+        k.DEBITORSTATUS AS CONTRACT_MAX_STATUS,
+        /* LEGACY */
+        k.SREFNR AS LEGACY_SREFNR,
+        k.REGION AS LEGACY_REGION,
+        k.LAND_KUERZEL AS LEGACY_LAND_KUERZEL
+      FROM ARADMIN.BK_HD_SUPERKUNDE_PDB k
+      JOIN BK.DEBITOR d ON d.REFNR = k.SREFNR
+      JOIN ARADMIN.BK_HD_PERSDATEN p ON k.SREFNR =p.REFNR
+      WHERE k.KUNDENTYP_FIBU != 0
+        AND k.KUNDENTYP_FIBU != 16
+        AND {{{ ID @ k.REGION || '-' || k.SREFNR }}}
+        AND {{{ LEGACY_SREFNR @ k.SREFNR }}}
+        AND {{{ LEGACY_REGION @ k.REGION }}}
+      UNION ALL
+      SELECT
+        k.REGION || '-' || k.SREFNR AS ID,
+        k.KOOPERATIONSPARTNER AS TENANT_ID,
+        CASE
+          WHEN k.name2 IS NOT NULL AND k.name2 != 'n.n.' THEN
+          CASE
+            WHEN k.name1 IS NOT NULL AND k.name1 != 'n.n.' THEN k.name2 || ' ' || k.name1
+        	  ELSE k.name2
+        	END ELSE k.name1
+        END AS COMPANY,
+        decode(k.name2, null, k.name3, 'n.n.', k.name3, k.name1) CONTACTPERSON,
+        CASE WHEN k.KUNDENGRUPPE = 'closed' THEN NULL ELSE k.KUNDENGRUPPE END AS GROUP_ID,
+        k.BETREUUNGSLINIE AS CARELINE,
+        decode_deb_gkdtyp(k.GKD_TYP) AS MASTER_TYPE,
+        decode_deb_kundentyp(k.KUNDENTYP) AS CUSTOMER_TYPE,
+        k.KUNDENTYP AS CUSTOMER_TYPE_ID,
+        decode_deb_kundentyp_fibu(k.KUNDENTYP_FIBU) AS FINANCE_TYPE,
+        p.BONITAET AS CREDIT_RATING,
+        CASE
+          WHEN k.CARRIER IS NULL THEN 0
+          WHEN k.CARRIER = 0 THEN 1
+          ELSE 0
+        END AS IS_CARRIER,
+        k.KDBETR_MANR AS CRM_USER_ID,
+        k.MODIFIED_DATE AS MODIFIED_AT,
+        k.CREATE_DATE AS CREATED_AT,
+        CASE
+          WHEN k.TECHKEYACCOUNT IS NULL THEN 0
+          WHEN k.TECHKEYACCOUNT = 0 THEN 1
+          ELSE 0
+        END AS IS_TECH_KEYACCOUNT,
+        k.FIRMEN_ID AS CARRIER_ID,
+        k.FIRMA AS CARRIER_NAME,
+        k.HAUPTSREFNR AS BILLING_VIA_CUSTOMER_ID,
+        k.GKD_NR AS MAJOR_CUSTOMER_ID,
+        '+49' AS PHONE_COUNTRY,
+        ltrim(k.A_Vorwahl, '0') AS PHONE_AREACODE,
+        k.A_Durchwahl AS PHONE_EXTENSION,
+        k.Email1 AS EMAIL,
+        k.Zimmer1 AS ROOM,
+        k.ZIMMER_NR1 AS ROOM_NUMBER,
+        k.STR1 AS STREET,
+        k.HAUSNR1 AS HOUSENUMBER,
+        k.HAUSNR_ZUS1 AS HOUSENUMBER_AFFIX,
+        k.ORT1 AS CITY,
+        k.Ortsnamenszusatz AS CITY_AFFIX,
+        k.PLZ_CODE AS POSTAL_CODE,
+        CASE
+          WHEN k.LAND_KUERZEL = 'D' THEN 'DEU'
+          WHEN k.LAND_KUERZEL = 'CH' THEN 'CHE'
+          WHEN k.LAND_KUERZEL = 'DK' THEN 'DNK'
+          WHEN k.LAND_KUERZEL = 'AUS' THEN 'AUS'
+          WHEN k.LAND_KUERZEL = 'RUS' THEN 'RUS'
+          WHEN k.LAND_KUERZEL = 'CZ' THEN 'CZE'
+          ELSE ''
+        END AS COUNTRY,
+        k.FREMDNR AS EXTERNAL_ID,
+        k.void AS SALESPARTNER_ID,
+        k.Void_2 AS SALESPARTNER_SUB_ID,
+        CASE WHEN k.Rechnungssplit = 0 THEN 1 ELSE 0 END AS INVOICE_SPLIT,
+        d.OPT_IN_DATUM AS OPT_IN_UPDATED_AT,
+        d.opt_in AS OPT_IN_STATUS_DESCRIPTION,
+        CASE
+          WHEN d.opt_in LIKE '%MAIL%' THEN 1
+          WHEN d.opt_in LIKE '%OPT-In nicht eingeholt%' THEN NULL
+          WHEN d.opt_in LIKE '%In Klaerung%' THEN NULL
+          WHEN d.opt_in IS NULL THEN NULL
+          ELSE 0
+        END AS OPT_IN_MAIL,
+        CASE
+          WHEN d.opt_in LIKE '%SMS%' THEN 1
+          WHEN d.opt_in LIKE '%OPT-In nicht eingeholt%' THEN NULL
+          WHEN d.opt_in LIKE '%In Klaerung%' THEN NULL
+          WHEN d.opt_in IS NULL THEN NULL
+          ELSE 0
+        END AS OPT_IN_SMS,
+        CASE
+          WHEN d.opt_in LIKE '%TELEFON%' THEN 1
+          WHEN d.opt_in LIKE '%OPT-In nicht eingeholt%' THEN NULL
+          WHEN d.opt_in LIKE '%In Klaerung%' THEN NULL
+          WHEN d.opt_in IS NULL THEN NULL
+          ELSE 0
+        END AS OPT_IN_CALL,
+        CASE
+          WHEN d.opt_in LIKE '%FAX%' THEN 1
+          WHEN d.opt_in LIKE '%OPT-In nicht eingeholt%' THEN NULL
+          WHEN d.opt_in LIKE '%In Klaerung%' THEN NULL
+          WHEN d.opt_in IS NULL THEN NULL
+          ELSE 0
+        END AS OPT_IN_FAX,
+        CASE
+          WHEN d.opt_in LIKE '%POST%' THEN 1
+          WHEN d.opt_in LIKE '%OPT-In nicht eingeholt%' THEN NULL
+          WHEN d.opt_in LIKE '%In Klaerung%' THEN NULL
+          WHEN d.opt_in IS NULL THEN NULL
+          ELSE 0
+        END AS OPT_IN_POST,
+        CASE
+          WHEN d.opt_in LIKE '%TERMIN%' THEN 1
+          WHEN d.opt_in LIKE '%OPT-In nicht eingeholt%' THEN NULL
+          WHEN d.opt_in LIKE '%In Klaerung%' THEN NULL
+          WHEN d.opt_in IS NULL THEN NULL
+          ELSE 0
+        END AS OPT_IN_MEETING,
+        CASE
+          WHEN d.opt_in LIKE '%OPT-In nicht eingeholt%' THEN 0
+          WHEN d.opt_in LIKE '%In Klaerung%' THEN NULL
+          WHEN d.opt_in IS NULL THEN NULL
+          ELSE 1
+        END AS OPT_IN_STATUS,
+        d.A_FLAG AS SOURCECOUNTER,
+        /* NEU */
+        d.TITEL1_BRANCHE AS BUSINESS_FIELD,
+        d.ANGELEGT_VON AS CREATED_BY,
+        d.D_FLAG_DATUM AS DELETED_AT,
+        d.DATA_FROM AS MODIFIED_BY,
+        d.STEUER_NR AS TAX_CODE,
+        CASE WHEN d.A1UND1_KUNDE IS NULL THEN 0 ELSE 1 END AS IS_1UND1,
+        d.ORT_KUNDENBETREUUNG AS CARE_REGION,
+        d.D_FLAG AS IS_DELETED,
+        k.DEBITORSTATUS AS CONTRACT_MAX_STATUS,
+        /* LEGACY */
+        k.SREFNR AS LEGACY_SREFNR,
+        k.REGION AS LEGACY_REGION,
+        k.LAND_KUERZEL AS LEGACY_LAND_KUERZEL
+      FROM ARADMIN.TE_HD_SUPERKUNDE_PDB k
+      JOIN TE.DEBITOR d ON d.REFNR = k.SREFNR
+      JOIN ARADMIN.TE_HD_PERSDATEN p ON k.SREFNR =p.REFNR
+      WHERE k.KUNDENTYP_FIBU != 0
+        AND k.KUNDENTYP_FIBU != 16
+        AND {{{ ID @ k.REGION || '-' || k.SREFNR }}}
+        AND {{{ LEGACY_SREFNR @ k.SREFNR }}}
+        AND {{{ LEGACY_REGION @ k.REGION }}}
+      UNION ALL
+      SELECT
+        k.REGION || '-' || k.SREFNR AS ID,
+        k.KOOPERATIONSPARTNER AS TENANT_ID,
+        CASE
+          WHEN k.name2 IS NOT NULL AND k.name2 != 'n.n.' THEN
+          CASE
+            WHEN k.name1 IS NOT NULL AND k.name1 != 'n.n.' THEN k.name2 || ' ' || k.name1
+        	  ELSE k.name2
+        	END ELSE k.name1
+        END AS COMPANY,
+        decode(k.name2, null, k.name3, 'n.n.', k.name3, k.name1) CONTACTPERSON,
+        CASE WHEN k.KUNDENGRUPPE = 'closed' THEN NULL ELSE k.KUNDENGRUPPE END AS GROUP_ID,
+        k.BETREUUNGSLINIE AS CARELINE,
+        decode_deb_gkdtyp(k.GKD_TYP) AS MASTER_TYPE,
+        decode_deb_kundentyp(k.KUNDENTYP) AS CUSTOMER_TYPE,
+        k.KUNDENTYP AS CUSTOMER_TYPE_ID,
+        decode_deb_kundentyp_fibu(k.KUNDENTYP_FIBU) AS FINANCE_TYPE,
+        p.BONITAET AS CREDIT_RATING,
+        CASE
+          WHEN k.CARRIER IS NULL THEN 0
+          WHEN k.CARRIER = 0 THEN 1
+          ELSE 0
+        END AS IS_CARRIER,
+        k.KDBETR_MANR AS CRM_USER_ID,
+        k.MODIFIED_DATE AS MODIFIED_AT,
+        k.CREATE_DATE AS CREATED_AT,
+        CASE
+          WHEN k.TECHKEYACCOUNT IS NULL THEN 0
+          WHEN k.TECHKEYACCOUNT = 0 THEN 1
+          ELSE 0
+        END AS IS_TECH_KEYACCOUNT,
+        k.FIRMEN_ID AS CARRIER_ID,
+        k.FIRMA AS CARRIER_NAME,
+        k.HAUPTSREFNR AS BILLING_VIA_CUSTOMER_ID,
+        k.GKD_NR AS MAJOR_CUSTOMER_ID,
+        '+49' AS PHONE_COUNTRY,
+        ltrim(k.A_Vorwahl, '0') AS PHONE_AREACODE,
+        k.A_Durchwahl AS PHONE_EXTENSION,
+        k.Email1 AS EMAIL,
+        k.Zimmer1 AS ROOM,
+        k.ZIMMER_NR1 AS ROOM_NUMBER,
+        k.STR1 AS STREET,
+        k.HAUSNR1 AS HOUSENUMBER,
+        k.HAUSNR_ZUS1 AS HOUSENUMBER_AFFIX,
+        k.ORT1 AS CITY,
+        k.Ortsnamenszusatz AS CITY_AFFIX,
+        k.PLZ_CODE AS POSTAL_CODE,
+        CASE
+          WHEN k.LAND_KUERZEL = 'D' THEN 'DEU'
+          WHEN k.LAND_KUERZEL = 'CH' THEN 'CHE'
+          WHEN k.LAND_KUERZEL = 'DK' THEN 'DNK'
+          WHEN k.LAND_KUERZEL = 'AUS' THEN 'AUS'
+          WHEN k.LAND_KUERZEL = 'RUS' THEN 'RUS'
+          WHEN k.LAND_KUERZEL = 'CZ' THEN 'CZE'
+          ELSE ''
+        END AS COUNTRY,
+        k.FREMDNR AS EXTERNAL_ID,
+        k.void AS SALESPARTNER_ID,
+        k.Void_2 AS SALESPARTNER_SUB_ID,
+        CASE WHEN k.Rechnungssplit = 0 THEN 1 ELSE 0 END AS INVOICE_SPLIT,
+        d.OPT_IN_DATUM AS OPT_IN_UPDATED_AT,
+        d.opt_in AS OPT_IN_STATUS_DESCRIPTION,
+        CASE
+          WHEN d.opt_in LIKE '%MAIL%' THEN 1
+          WHEN d.opt_in LIKE '%OPT-In nicht eingeholt%' THEN NULL
+          WHEN d.opt_in LIKE '%In Klaerung%' THEN NULL
+          WHEN d.opt_in IS NULL THEN NULL
+          ELSE 0
+        END AS OPT_IN_MAIL,
+        CASE
+          WHEN d.opt_in LIKE '%SMS%' THEN 1
+          WHEN d.opt_in LIKE '%OPT-In nicht eingeholt%' THEN NULL
+          WHEN d.opt_in LIKE '%In Klaerung%' THEN NULL
+          WHEN d.opt_in IS NULL THEN NULL
+          ELSE 0
+        END AS OPT_IN_SMS,
+        CASE
+          WHEN d.opt_in LIKE '%TELEFON%' THEN 1
+          WHEN d.opt_in LIKE '%OPT-In nicht eingeholt%' THEN NULL
+          WHEN d.opt_in LIKE '%In Klaerung%' THEN NULL
+          WHEN d.opt_in IS NULL THEN NULL
+          ELSE 0
+        END AS OPT_IN_CALL,
+        CASE
+          WHEN d.opt_in LIKE '%FAX%' THEN 1
+          WHEN d.opt_in LIKE '%OPT-In nicht eingeholt%' THEN NULL
+          WHEN d.opt_in LIKE '%In Klaerung%' THEN NULL
+          WHEN d.opt_in IS NULL THEN NULL
+          ELSE 0
+        END AS OPT_IN_FAX,
+        CASE
+          WHEN d.opt_in LIKE '%POST%' THEN 1
+          WHEN d.opt_in LIKE '%OPT-In nicht eingeholt%' THEN NULL
+          WHEN d.opt_in LIKE '%In Klaerung%' THEN NULL
+          WHEN d.opt_in IS NULL THEN NULL
+          ELSE 0
+        END AS OPT_IN_POST,
+        CASE
+          WHEN d.opt_in LIKE '%TERMIN%' THEN 1
+          WHEN d.opt_in LIKE '%OPT-In nicht eingeholt%' THEN NULL
+          WHEN d.opt_in LIKE '%In Klaerung%' THEN NULL
+          WHEN d.opt_in IS NULL THEN NULL
+          ELSE 0
+        END AS OPT_IN_MEETING,
+        CASE
+          WHEN d.opt_in LIKE '%OPT-In nicht eingeholt%' THEN 0
+          WHEN d.opt_in LIKE '%In Klaerung%' THEN NULL
+          WHEN d.opt_in IS NULL THEN NULL
+          ELSE 1
+        END AS OPT_IN_STATUS,
+        d.A_FLAG AS SOURCECOUNTER,
+        /* NEU */
+        d.TITEL1_BRANCHE AS BUSINESS_FIELD,
+        d.ANGELEGT_VON AS CREATED_BY,
+        d.D_FLAG_DATUM AS DELETED_AT,
+        d.DATA_FROM AS MODIFIED_BY,
+        d.STEUER_NR AS TAX_CODE,
+        CASE WHEN d.A1UND1_KUNDE IS NULL THEN 0 ELSE 1 END AS IS_1UND1,
+        d.ORT_KUNDENBETREUUNG AS CARE_REGION,
+        d.D_FLAG AS IS_DELETED,
+        k.DEBITORSTATUS AS CONTRACT_MAX_STATUS,
+        /* LEGACY */
+        k.SREFNR AS LEGACY_SREFNR,
+        k.REGION AS LEGACY_REGION,
+        k.LAND_KUERZEL AS LEGACY_LAND_KUERZEL
+      FROM ARADMIN.VG_HD_SUPERKUNDE_PDB k
+      JOIN VG.DEBITOR d ON d.REFNR = k.SREFNR
+      JOIN ARADMIN.VG_HD_PERSDATEN p ON k.SREFNR = p.REFNR
+      WHERE k.KUNDENTYP_FIBU != 0
+        AND k.KUNDENTYP_FIBU != 16
+        AND {{{ ID @ k.REGION || '-' || k.SREFNR }}}
+        AND {{{ LEGACY_SREFNR @ k.SREFNR }}}
+        AND {{{ LEGACY_REGION @ k.REGION }}}
+    fields:
+      - name: ID
+        type: text
+        length: 43
+        description: Die eindeutige KundenID. Besteht aus einer 2-Zeichen Kennung für den Mandanten, gefolgt von einer Nummer.
+        referenceName: CUSTOMER_ID
+      - name: TENANT_ID
+        type: text
+        length: 25
+        description: Der Mandant
+      - name: FIRST_NAME
+        type: text
+        length: 60
+        description: Der Firmenname
+      - name: CONTACTPERSON
+        type: text
+        length: 60
+        description: Der primäre Ansprechpartner
+      - name: GROUP_ID
+        type: text
+        length: 25
+        description: Die Kundengruppe
+      - name: CARELINE
+        type: text
+        length: 30
+        description: Die Betreuungslinie
+      - name: MASTER_TYPE
+        type: text
+        length: 30
+        description: Großkunde - Kundentyp
+      - name: CUSTOMER_TYPE
+        type: text
+        length: 30
+        description: Kundenart - Großkunde (klein) / Großkunde (groß)
+      - name: CUSTOMER_TYPE_ID
+        type: number
+        length: 1
+        description: 0 - Privatkunde, 1 - Geschäftskunde (klein), 2 - Geschäftskunde (groß)
+      - name: FINANCE_TYPE
+        type: text
+        length: 30
+        description: Kundentyp - Finance
+      - name: CREDIT_RATING
+        type: text
+        length: 40
+        description: Bonität des Kunden
+      - name: IS_CARRIER
+        type: boolean
+        description: Das Flag kennzeichnet Carrier-Kunden
+      - name: CRM_USER_ID
+        type: number
+        length: 15
+        description: Mitarbeiternummer des Kundenbetreuers
+      - name: MODIFIED_AT
+        type: date
+        type_variant: unixts_seconds
+        description: Geändert am
+      - name: CREATED_AT
+        type: date
+        type_variant: unixts_seconds
+        description: Erstellt am
+      - name: IS_TECH_KEYACCOUNT
+        type: boolean
+        description: Techkeyaccount
+      - name: CARRIER_ID
+        type: text
+        length: 6
+        description: Firmen-ID
+      - name: CARRIER_NAME
+        type: text
+        length: 15
+        description: Dient der Identifizierung der Fa. (Mandant)
+      - name: BILLING_VIA_CUSTOMER_ID
+        type: text
+        length: 20
+        description: Daten für "Hauptdebitor Rabatte"
+      - name: MAJOR_CUSTOMER_ID
+        type: number
+        length: 22
+        description: GroßkundenNr (kaufmännische GKd-Nr)
+      - name: PHONE_COUNTRY
+        type: text
+        length: 3
+        description: Nummer - Landesvorwahl
+      - name: PHONE_AREACODE
+        type: text
+        length: 10
+        description: Nummer - Vorwahl
+      - name: PHONE_EXTENSION
+        type: text
+        length: 20
+        description: Nummer - Durchwahl
+      - name: EMAIL
+        type: text
+        length: 60
+        description: EMail
+      - name: ROOM
+        type: text
+        length: 20
+        description: Raum
+      - name: ROOM_NUMBER
+        type: text
+        length: 15
+        description: Raumnummer
+      - name: STREET
+        type: text
+        length: 40
+        description: Straße
+      - name: HOUSENUMBER
+        type: text
+        length: 10
+        description: Hausnummer
+      - name: HOUSENUMBER_AFFIX
+        type: text
+        length: 10
+        description: Housenummernzusatz
+      - name: CITY
+        type: text
+        length: 40
+        description: Stadt
+      - name: CITY_AFFIX
+        type: text
+        length: 40
+        description: Stadt - Namenszusatz
+      - name: POSTAL_CODE
+        type: text
+        length: 20
+        description: Postleitzahl
+      - name: COUNTRY
+        type: text
+        length: 7
+        description: ISO 3166-1 alpha-3 Landescode
+      - name: EXTERNAL_ID
+        type: text
+        length: 20
+        description: Externe Id vom Auftragseingang (GKOE, oä.)
+      - name: SALESPARTNER_ID
+        type: text
+        length: 14
+        description: ID - Hauptvertriebspartner
+      - name: SALESPARTNER_SUB_ID
+        type: text
+        length: 14
+        description: ID - Untervertriebspartner
+      - name: INVOICE_SPLIT
+        type: boolean
+        description: Rechnungssplit
+      - name: OPT_IN_STATUS_DESCRIPTION
+        type: text
+        length: 100
+        description: Beschreibung des Opt-In Status
+      - name: OPT_IN_STATUS
+        type: number
+        length: 1
+        description: Opt-In Status (1 = eingeholt, 0 = nicht eingeholt, null = in klärung)
+      - name: OPT_IN_MAIL
+        type: number
+        length: 1
+        description: Wir dürfen den Kunden über EMail kontaktieren (1 = ja, 0 = nein, null = in klärung)?
+      - name: OPT_IN_CALL
+        type: number
+        length: 1
+        description: Wir dürfen den Kunden Anrufen (1 = ja, 0 = nein, null = in klärung)?
+      - name: OPT_IN_SMS
+        type: number
+        length: 1
+        description: Wir dürfen den Kunden über SMS kontaktieren (1 = ja, 0 = nein, null = in klärung)?
+      - name: OPT_IN_FAX
+        type: number
+        length: 1
+        description: Wir dürfen den Kunden über FAX kontaktieren (1 = ja, 0 = nein, null = in klärung)?
+      - name: OPT_IN_POST
+        type: number
+        length: 1
+        description: Wir dürfen den Kunden über POST kontaktieren (1 = ja, 0 = nein, null = in klärung)?
+      - name: OPT_IN_MEETING
+        type: number
+        length: 1
+        description: Wir dürfen Termine mit dem Kunden machen (1 = ja, 0 = nein, null = in klärung)?
+      - name: OPT_IN_UPDATED_AT
+        type: date
+        description: Wann wurde der Opt-In Status aktualisiert?
+      - name: SOURCECOUNTER
+        type: number
+        length: 15
+        description: Änderungsflag, wird bei jedem Update auf der Tabelle um 1 erhöht (Achtung - Regional abweichende Nummernkreise)
+        # Neue Felder
+      - name: BUSINESS_FIELD
+        type: text
+        length: 50
+        description: Titel z.B. eines Selbstständigen oder die Angabe einer Branche
+      - name: CREATED_BY
+        type: text
+        length: 10
+        description: Diese Information bietet die Möglichkeit, entsprechenden Fachbereich direkt nach Prüfung der DQ auf Optimierungen hinzuweisen.
+      - name: DELETED_AT
+        type: date
+        description: Dieses Datums-Flag gibt einen Hinweis darauf, wann das Datum in em Flag-Feld D-Flag gesetzt wurde.
+      - name: MODIFIED_BY
+        type: text
+        length: 1
+        description: Diese Information bietet die Möglichkeit, entsprechenden Fachbereich direkt nach Prüfung der DQ auf Optimierungen hinzuweisen.
+      - name: TAX_CODE
+        type: text
+        length: 20
+        description: Es handelt sich hierbei um die Unternehmenssteuer-ID.
+      - name: IS_1UND1
+        type: boolean
+        description: Dieses Flag weist aus, ob es sich bei diesem Debitor um einen 1&1-Kunden handelt, der nicht mehr Kunde der 1&1 Versatel ist.
+      - name: CARE_REGION
+        type: text
+        length: 4
+        description: Dieses Feld weist aus, in welcher Region der Debitor betreut wird.
+      - name: IS_DELETED
+        type: boolean
+        description: Löschkennzeichnung; 0 - nicht gelöscht, 1 - gelöscht
+      - name: CONTRACT_MAX_STATUS
+        type: number
+        length: 15
+        description: Dieses Feld bildet den höchstwertigen Status aller Verträge des Kunden ab; 0 - Aktiv, 1 - Realisierung, 2 - Erfassung, 3 - Kündigung, 4 - Inaktiv
+        # LEGACY
+      - name: LEGACY_SREFNR
+        type: number
+        length: 39
+        description: Legacy Feld - RefNr
+        referenceName: LEGACY_SREFNR
+        referenceAuxiliary: true
+      - name: LEGACY_REGION
+        type: text
+        length: 2
+        description: Legacy Feld - Region
+        referenceName: LEGACY_REGION
+        referenceAuxiliary: true
+      - name: LEGACY_LAND_KUERZEL
+        type: text
+        length: 5
+        description: Land
+    deprecated: false
