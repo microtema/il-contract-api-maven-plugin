@@ -4,10 +4,9 @@ Reducing Boilerplate Code with il-contract-api maven plugin
   Through a simple set of il-contract-api templates and saving 60% of development time 
 
 ## Key Features
-* Auto generate by maven compile phase
+* Auto generation by maven compile phase
 * Auto detection commons classes
 * Custom Field mapping
-
 
 ## How to use
 
@@ -17,7 +16,7 @@ Reducing Boilerplate Code with il-contract-api maven plugin
     <artifactId>il-contract-api-maven-plugin</artifactId>
     <version>2.0.1</version>
     <configuration>
-        <packageName>${il.contract.api.package.name}</packageName>
+        <packageName>${project.groupId}.model</packageName>
         <outputDir>./src/main/java</outputDir>
         <fieldMapping>
             <LASTNAME>LAST_NAME</LASTNAME>
