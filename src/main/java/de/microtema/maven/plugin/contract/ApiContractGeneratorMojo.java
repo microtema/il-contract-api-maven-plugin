@@ -38,6 +38,7 @@ public class ApiContractGeneratorMojo extends AbstractMojo {
     Map<String, String> fieldMapping = new HashMap<>();
 
     CustomApiService customApiService = ClassUtil.createInstance(CustomApiService.class);
+
     javaTemplateService javaTemplateService = ClassUtil.createInstance(javaTemplateService.class);
 
     @SneakyThrows
@@ -53,9 +54,16 @@ public class ApiContractGeneratorMojo extends AbstractMojo {
             return;
         }
 
-        logMessage("Generate GitLab Pipeline for " + appName + " -> " + outputDir);
-
         File fileOrDir = new File(apiFileName);
+
+        if (!fileOrDir.exists()) {
+
+            logMessage("Skip maven module: " + appName + " since it does not contains api file!");
+
+            return;
+        }
+
+        logMessage("Generate GitLab Pipeline for " + appName + " -> " + outputDir);
 
         List<List<EntityDescriptor>> all = new ArrayList<>();
 
@@ -67,7 +75,16 @@ public class ApiContractGeneratorMojo extends AbstractMojo {
 
         } else if (fileOrDir.isDirectory()) {
 
-            for (File file : fileOrDir.listFiles()) {
+            File[] files = fileOrDir.listFiles();
+
+            if (Objects.isNull(files) || files.length == 0) {
+
+                logMessage("Skip maven module: " + appName + " since it does not contains api file!");
+
+                return;
+            }
+
+            for (File file : files) {
 
                 List<EntityDescriptor> entities = customApiService.getEntityDescriptors(file.getPath());
 

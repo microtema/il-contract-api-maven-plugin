@@ -9,6 +9,7 @@ import org.apache.commons.lang3.text.WordUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +21,7 @@ public class JavaTemplate {
 
     public static final String JSON_ANNOTATION = "@JsonProperty";
 
-    public File writeOutJavaFile(String outputDirectory, ClassDescriptor classDescriptor) throws IOException {
+    public void writeOutJavaFile(String outputDirectory, ClassDescriptor classDescriptor) throws IOException {
 
         String packageName = classDescriptor.getPackageName();
         EntityDescriptor entityDescriptor = classDescriptor.getEntityDescriptor();
@@ -33,36 +34,36 @@ public class JavaTemplate {
 
         StringBuilder stringBuilder = new StringBuilder();
 
-        stringBuilder.append("package ").append(packageName).append(";\r\n\r\n");
-        stringBuilder.append("import com.fasterxml.jackson.annotation.JsonProperty;\r\n");
+        stringBuilder.append("package ").append(packageName).append(";").append(FileUtil.lineSeparator(2));
+        stringBuilder.append("import com.fasterxml.jackson.annotation.JsonProperty;").append(FileUtil.lineSeparator(1));
 
         for (String importPackageName : getImportPackages(entityDescriptor.getFields(), commonFields, isCommonClass)) {
-            stringBuilder.append("import ").append(importPackageName).append(";\r\n");
+            stringBuilder.append("import ").append(importPackageName).append(";").append(FileUtil.lineSeparator(1));
         }
 
         if (StringUtils.isNotEmpty(extendsClassName) && !isCommonClass) {
-
+            // do not implement interfaces on subclass, due to the common class
         } else {
 
             for (String importClassName : interfaceNames) {
-                stringBuilder.append("import ").append(importClassName).append(";\r\n");
+                stringBuilder.append("import ").append(importClassName).append(";").append(FileUtil.lineSeparator(1));
             }
         }
 
         if (StringUtils.isNotEmpty(extendsClassName) && !isCommonClass) {
-            stringBuilder.append("import lombok.EqualsAndHashCode;\r\n");
+            stringBuilder.append("import lombok.EqualsAndHashCode;").append(FileUtil.lineSeparator(1));
         }
 
-        stringBuilder.append("import lombok.Data;\r\n\r\n");
+        stringBuilder.append("import lombok.Data;").append(FileUtil.lineSeparator(2));
 
         if (!isCommonClass) {
             appendDescription(stringBuilder, 0, entityDescriptor.getDescription(), "Version: " + entityDescriptor.getVersion());
         }
         stringBuilder.append("@Data\n");
         if (StringUtils.isNotEmpty(extendsClassName) && !isCommonClass) {
-            stringBuilder.append("@EqualsAndHashCode(callSuper = true)\n");
+            stringBuilder.append("@EqualsAndHashCode(callSuper = true)").append(FileUtil.lineSeparator(1));
         }
-        stringBuilder.append("public class ").append(className).append(getImplementsOrExtendsClasses(extendsClassName, interfaceNames, isCommonClass)).append(" {\r\n\n");
+        stringBuilder.append("public class ").append(className).append(getImplementsOrExtendsClasses(extendsClassName, interfaceNames, isCommonClass)).append(" {").append(FileUtil.lineSeparator(2));
 
         for (FieldDescriptor fieldDescriptor : entityDescriptor.getFields()) {
 
@@ -78,35 +79,25 @@ public class JavaTemplate {
             String fieldType = getType(fieldDescriptor.getType());
 
             appendDescription(stringBuilder, 4, fieldDescriptor.getDescription());
-            appendJsonKey(stringBuilder, name).append("\n").append("    private ").append(fieldType).append(" ").append(fieldName).append(";\r\n\n");
+            appendJsonKey(stringBuilder, name).append(FileUtil.lineSeparator(1)).append("    private ").append(fieldType).append(" ").append(fieldName).append(";").append(FileUtil.lineSeparator(2));
         }
 
-        stringBuilder.append("}\r\n");
+        stringBuilder.append("}").append(FileUtil.lineSeparator(1));
 
         String packageDirectory = FileUtil.getPackageDirectory(packageName);
 
         String file = String.format("%s%s%s%s.java", outputDirectory, File.separator, packageDirectory, className);
-        System.out.print(String.format("Writing file '%s' ...", file));
+        System.out.print("Writing file " + file);
 
         File outputFile = new File(file);
-        FileUtils.writeStringToFile(outputFile, stringBuilder.toString());
-
-        return outputFile;
+        FileUtils.writeStringToFile(outputFile, stringBuilder.toString(), Charset.defaultCharset());
     }
 
     private boolean skipField(boolean isCommonClass, Set<String> commonFields, String name) {
 
         if (isCommonClass) {
-            if (!commonFields.contains(name)) {
-
-                return true;
-            }
-        } else if (commonFields.contains(name)) {
-
-            return true;
-        }
-
-        return false;
+            return !commonFields.contains(name);
+        } else return commonFields.contains(name);
     }
 
     private String getImplementsOrExtendsClasses(String extendsClassName, List<String> interfaceNames, boolean isCommonClass) {
@@ -136,11 +127,11 @@ public class JavaTemplate {
             paddingStr += " ";
         }
 
-        stringBuilder.append(paddingStr).append("/**").append("\r\n");
+        stringBuilder.append(paddingStr).append("/**").append(FileUtil.lineSeparator(1));
         for (String description : descriptions) {
-            stringBuilder.append(paddingStr).append("* ").append(description).append("\r\n");
+            stringBuilder.append(paddingStr).append("* ").append(description).append(FileUtil.lineSeparator(1));
         }
-        stringBuilder.append(paddingStr).append("*/").append("\r\n");
+        stringBuilder.append(paddingStr).append("*/").append(FileUtil.lineSeparator(1));
     }
 
     private List<String> getImportPackages(List<FieldDescriptor> fieldDescriptors, Set<String> commonFields, boolean isCommonClass) {

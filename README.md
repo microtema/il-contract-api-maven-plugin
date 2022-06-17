@@ -1,16 +1,12 @@
-# gitlab ci generator
-Reducing Boilerplate Code with gitlabci maven plugin
+# Integration Layer Contract API Generator
+Reducing Boilerplate Code with il-contract-api maven plugin
 > More Time for Feature and functionality
-  Through a simple set of gitlabci templates and saving 60% of development time 
+  Through a simple set of il-contract-api templates and saving 60% of development time 
 
 ## Key Features
 * Auto generate by maven compile phase
-* Auto JUnit Tests detector by adding "JUnit Tests" stage
-* Auto Integration Tests detector by adding "Integration Tests" stage
-* Auto Dockerfile detector by adding "Build Docker" stage
-* Auto Maven artifact detector by adding "Deploy Maven Artifact" stage
-* Auto Sonar report detector by adding "Sonar Report" stage
-* Auto Deployment to Cloud Platform by adding "Deployment" stage
+* Auto detection commons classes
+* Custom Field mapping
 
 
 ## How to use
@@ -18,21 +14,22 @@ Reducing Boilerplate Code with gitlabci maven plugin
 ```
 <plugin>
     <groupId>de.microtema</groupId>
-    <artifactId>gitlabci-maven-plugin</artifactId>
-    <version>2.0.1-SNAPSHOT</version>
+    <artifactId>il-contract-api-maven-plugin</artifactId>
+    <version>2.0.1</version>
     <configuration>
-        <variables>
-          <DOCKER_REGISTRY>docker.registry.local</DOCKER_REGISTRY>
-        </variables>
-        <stages>
-            <dev>develop</dev>
-            <stage>/^release/.*$/</stage>
-        </stages>
+        <packageName>${il.contract.api.package.name}</packageName>
+        <outputDir>./src/main/java</outputDir>
+        <fieldMapping>
+            <LASTNAME>LAST_NAME</LASTNAME>
+            <FIRSTNAME>FIRST_NAME</FIRSTNAME>
+            <MODIFIED_AT>MODIFIED_DATE</MODIFIED_AT>
+            <CREATED_AT>CREATED_DATE</CREATED_AT>
+        </fieldMapping>
     </configuration>
     <executions>
         <execution>
-            <id>gitlabci</id>
-            <phase>compile</phase>
+            <id>il-contract-api</id>
+            <phase>validate</phase>
             <goals>
                 <goal>generate</goal>
             </goals>
@@ -42,317 +39,89 @@ Reducing Boilerplate Code with gitlabci maven plugin
 ```
 
 ## Output 
-> .gitlab-ci.yml 
+> ./target/generated/src/main/de/microtema/model/BusinessCustomer.java 
+> ./target/generated/src/main/de/microtema/model/Customer.java 
+> ./target/generated/src/main/de/microtema/model/PrivateCustomer.java 
 > NOTE: This is an example file.
 
 ```
-variables:
-  DOCKER_REGISTRY: "docker.registry.local"
-  GIT_STRATEGY: "clone"
-  GIT_DEPTH: "10"
-  MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository\
-    \ -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN\
-    \ -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
-  MAVEN_CLI_OPTS: "-s settings.xml --batch-mode --errors --fail-at-end --show-version\
-    \ -DinstallAtEnd=true -DdeployAtEnd=true -Dhttp.proxyHost=$PROXY_HOST -Dhttp.proxyPort=$PROXY_PORT\
-    \ -Dhttp.nonProxyHosts=$NO_PROXY -Dhttps.proxyHost=$PROXY_HOST -Dhttps.proxyPort=$PROXY_PORT\
-    \ -Dhttps.nonProxyHosts=$NO_PROXY"
+package de.microtema.model;
 
-services:
-  - name: "docker:19.03.15-dind"
-    command:
-      - "--insecure-registry=registry.docker.versatel.local"
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.EqualsAndHashCode;
+import lombok.Data;
 
-cache: &project-cache
-  key: "$CI_PROJECT_ID"
-  paths:
-    - "$CI_PROJECT_DIR/.m2/repository"
+/**
+* Geschäftskunde
+* Version: 1.0
+*/
+@Data
+@EqualsAndHashCode(callSuper = true)
+public class BusinessCustomer extends Customer {
 
-.stage-template: &stage-template
-  image: "maven:3-openjdk-15"
+    /**
+    * Der Firmenname
+    */
+	@JsonProperty("COMPANY")
+    private String company;
 
-stages:
-  - compile
-  - security
-  - versioning
-  - test
-  - quality
-  - build
-  - package
-  - publish
-  - deployment
-  - readiness
-  - regression
-  - performance
-  - report
+}
+```
 
-Compile:
-  <<: *stage-template
-  stage: compile
-  script:
-    - mvn compile $MAVEN_CLI_OPTS
+```
+package de.microtema.model;
 
-Security Check:
-  <<: *stage-template
-  stage: security
-  script:
-    - mvn dependency-check:help -P security -Ddownloader.quick.query.timestamp=false $MAVEN_CLI_OPTS
+import com.fasterxml.jackson.annotation.JsonProperty;
+import de.microtema.commons.model.IdAble;
+import de.microtema.commons.model.CarrierIdentifier;
+import lombok.Data;
 
-Versioning Release:
-  <<: *stage-template
-  stage: versioning
-  script:
-    - echo 'mvn versioning'
-  only:
-    refs:
-      - /^release/.*$/
+@Data
+public class Customer implements IdAble, CarrierIdentifier {
 
-Versioning Master:
-  <<: *stage-template
-  stage: versioning
-  script:
-    - echo 'mvn versioning'
-  only:
-    refs:
-      - master
-      - /^v[0-9]+\.[0-9]+\.[0-9]+$/
+    /**
+    * Die eindeutige KundenID. Besteht aus einer 2-Zeichen Kennung für den Mandanten, gefolgt von einer Nummer.
+    */
+	@JsonProperty("ID")
+    private String id;
 
-Unit Test:
-  <<: *stage-template
-  stage: test
-  cache:
-    <<: *project-cache
-    policy: pull
-  script:
-    - mvn test $MAVEN_CLI_OPTS
-  artifacts:
-    paths:
-      - target
-    expire_in: 6 hour
+    /**
+    * Der Mandant
+    */
+	@JsonProperty("TENANT_ID")
+    private String tenantId;
 
-Acceptance Test:
-  <<: *stage-template
-  stage: test
-  cache:
-    <<: *project-cache
-    policy: pull
-  script:
-    - mvn test-compile failsafe:integration-test $MAVEN_CLI_OPTS
-  artifacts:
-    paths:
-      - target
-    expire_in: 6 hour
+}
+```
 
-Quality Gate:
-  <<: *stage-template
-  stage: quality
-  script:
-    - mvn sonar:sonar $MAVEN_CLI_OPTS
-  only:
-    refs:
-      - develop
-      - /^feature/.*$/
-      - /^release/.*$/
-      - master
-  artifacts:
-    paths:
-      - target
-    expire_in: 6 hour
+```
+package de.microtema.model;
 
-Build:
-  <<: *stage-template
-  stage: build
-  cache:
-    <<: *project-cache
-    policy: pull-push
-  artifacts:
-    paths:
-      - target
-    expire_in: 6 hour
-  script:
-    - mvn package -P prod -Dcode.coverage=0.0 -DskipTests=true $MAVEN_CLI_OPTS
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.EqualsAndHashCode;
+import lombok.Data;
 
-Package:
-  image: docker:19.03.12
-  stage: package
-  dependencies:
-    - Build
-  script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG .
-    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
-  only:
-    refs:
-      - develop
-      - /^release/.*$/
-      - master
-      - /^v[0-9]+\.[0-9]+\.[0-9]+$/
+/**
+* Privatekunde
+* Version: 1.2
+*/
+@Data
+@EqualsAndHashCode(callSuper = true)
+public class PrivateCustomer extends Customer {
 
-Deployment:
-  stage: deployment
-  script:
-    - echo 'trigger other *-deployments pipeline'
-  only:
-    refs:
-      - develop
-      - /^release/.*$/
-      - master
-      - /^v[0-9]+\.[0-9]+\.[0-9]+$/
+    /**
+    * Der Firmenname
+    */
+	@JsonProperty("FIRST_NAME")
+    private String firstName;
 
-Readiness Check:
-  stage: readiness
-  script:
-    - echo 'check sonar qualitygate'
-  only:
-    refs:
-      - develop
-      - /^release/.*$/
-      - master
-      - /^v[0-9]+\.[0-9]+\.[0-9]+$/
+    /**
+    * Der primäre Ansprechpartner
+    */
+	@JsonProperty("CONTACTPERSON")
+    private String contactperson;
 
-I2E:DEV:
-   <<: *stage-template
-   stage: regression
-   script:
-     - mvn integration-test -P i2e -DstageName=dev $MAVEN_CLI_OPTS
-   artifacts:
-     paths:
-       - target
-     expire_in: 6 hour
-   only:
-     refs: [ develop ]
-
-E2E:DEV:
-   <<: *stage-template
-   stage: regression
-   script:
-     - mvn integration-test -P e2e -DstageName=dev $MAVEN_CLI_OPTS
-   artifacts:
-     paths:
-       - target
-     expire_in: 6 hour
-   only:
-     refs: [ develop ]
-
-S2E:DEV:
-   <<: *stage-template
-   stage: regression
-   script:
-     - mvn integration-test -P s2e -DstageName=dev $MAVEN_CLI_OPTS
-   artifacts:
-     paths:
-       - target
-     expire_in: 6 hour
-   only:
-     refs: [ develop ]
-
-I2E:STAGE:
-   <<: *stage-template
-   stage: regression
-   script:
-     - mvn integration-test -P i2e -DstageName=stage $MAVEN_CLI_OPTS
-   artifacts:
-     paths:
-       - target
-     expire_in: 6 hour
-   only:
-     refs: [ release/*, bugfix/* ]
-
-E2E:STAGE:
-   <<: *stage-template
-   stage: regression
-   script:
-     - mvn integration-test -P e2e -DstageName=stage $MAVEN_CLI_OPTS
-   artifacts:
-     paths:
-       - target
-     expire_in: 6 hour
-   only:
-     refs: [ release/*, bugfix/* ]
-
-S2E:STAGE:
-   <<: *stage-template
-   stage: regression
-   script:
-     - mvn integration-test -P s2e -DstageName=stage $MAVEN_CLI_OPTS
-   artifacts:
-     paths:
-       - target
-     expire_in: 6 hour
-   only:
-     refs: [ release/*, bugfix/* ]
-
-I2E:PRD:
-   <<: *stage-template
-   stage: regression
-   script:
-     - mvn integration-test -P i2e -DstageName=prd $MAVEN_CLI_OPTS
-   artifacts:
-     paths:
-       - target
-     expire_in: 6 hour
-   only:
-     refs: [ master ]
-
-E2E:PRD:
-   <<: *stage-template
-   stage: regression
-   script:
-     - mvn integration-test -P e2e -DstageName=prd $MAVEN_CLI_OPTS
-   artifacts:
-     paths:
-       - target
-     expire_in: 6 hour
-   only:
-     refs: [ master ]
-
-S2E:PRD:
-   <<: *stage-template
-   stage: regression
-   script:
-     - mvn integration-test -P s2e -DstageName=prd $MAVEN_CLI_OPTS
-   artifacts:
-     paths:
-       - target
-     expire_in: 6 hour
-   only:
-     refs: [ master ]
-
-Load and Performance:
-  <<: *stage-template
-  stage: performance
-  script:
-    - echo 'mvn validate -P performace-$STAGE_NAME $MAVEN_CLI_OPTS'
-  artifacts:
-    paths:
-      - target
-    expire_in: 6 hour
-  only:
-    refs:
-      - develop
-      - /^release/.*$/
-
-Test Report:
-  stage: report
-  script:
-    - echo 'mvn report -Preport'
-  only:
-    refs:
-      - develop
-      - /^release/.*$/
-      - master
-      - /^v[0-9]+\.[0-9]+\.[0-9]+$/
-
-Change Log:
-  <<: *stage-template
-  stage: report
-  script:
-    - echo 'mvn changelog -P changelog $MAVEN_CLI_OPTS'
-  only:
-    refs:
-      - master
-      - /^release/.*$/
-      - /^v[0-9]+\.[0-9]+\.[0-9]+$/
+}
 ```
     
 ## Technology Stack

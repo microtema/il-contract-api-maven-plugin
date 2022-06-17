@@ -69,7 +69,7 @@ public class javaTemplateService {
 
         for (List<EntityDescriptor> entities : allEntities) {
 
-            Map<String, Set<String>> commonFields = getCommonFields(entities, entityName);
+            Map<String, Set<String>> commonFields = getCommonFields(entities);
 
             for (Map.Entry<String, Set<String>> entries : commonFields.entrySet()) {
 
@@ -133,7 +133,7 @@ public class javaTemplateService {
         return "Base";
     }
 
-    private Map<String, Set<String>> getCommonFields(List<EntityDescriptor> entities, String entityName) {
+    private Map<String, Set<String>> getCommonFields(List<EntityDescriptor> entities) {
 
         Map<String, Set<String>> map = new HashMap<>();
 

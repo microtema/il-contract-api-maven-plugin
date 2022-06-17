@@ -4,7 +4,7 @@ import java.io.File;
 
 public class FileUtil {
 
-    public static String getPackageDirectory(String packageName){
+    public static String getPackageDirectory(String packageName) {
 
         String packageDirectory = packageName.replaceAll("\\.", File.separator);
 
@@ -13,5 +13,18 @@ public class FileUtil {
         }
 
         return packageDirectory;
+    }
+
+    public static String lineSeparator(int lines) {
+
+        int index = 0;
+
+        String str = "";
+
+        while (index++ < lines) {
+            str += System.lineSeparator();
+        }
+
+        return str;
     }
 }
