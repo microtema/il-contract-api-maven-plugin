@@ -53,7 +53,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Data;
 
 /**
-* Geschäftskunde
+* Business Customer
 * Version: 1.0
 */
 @Data
@@ -61,9 +61,9 @@ import lombok.Data;
 public class BusinessCustomer extends Customer {
 
     /**
-    * Der Firmenname
+    * Comany Name
     */
-    @JsonProperty("COMPANY")
+	@JsonProperty("COMPANY")
     private String company;
 
 }
@@ -81,16 +81,22 @@ import lombok.Data;
 public class Customer implements IdAble, CarrierIdentifier {
 
     /**
-    * Die eindeutige KundenID. Besteht aus einer 2-Zeichen Kennung für den Mandanten, gefolgt von einer Nummer.
+    * Customer ID
     */
 	@JsonProperty("ID")
     private String id;
 
     /**
-    * Der Mandant
+    * Tenant ID
     */
 	@JsonProperty("TENANT_ID")
     private String tenantId;
+
+    /**
+    * Carrier Identifier
+    */
+	@JsonProperty("CARRIER_IDENTIFIER")
+    private String carrierIdentifier;
 
 }
 ```
@@ -103,7 +109,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Data;
 
 /**
-* Privatekunde
+* Private Customer
 * Version: 1.2
 */
 @Data
@@ -111,13 +117,13 @@ import lombok.Data;
 public class PrivateCustomer extends Customer {
 
     /**
-    * Der Firmenname
+    * Company Name
     */
 	@JsonProperty("FIRST_NAME")
     private String firstName;
 
     /**
-    * Der primäre Ansprechpartner
+    * Primary contact person
     */
 	@JsonProperty("CONTACTPERSON")
     private String contactperson;

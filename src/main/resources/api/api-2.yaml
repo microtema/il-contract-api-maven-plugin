@@ -1,22 +1,25 @@
 entities:
   - name: PrivateCustomer
-    description: Privatekunde
+    description: Private Customer
     version: 1.2
     fields:
       - name: ID
         type: text
         length: 43
-        description: Die eindeutige KundenID. Besteht aus einer 2-Zeichen Kennung für den Mandanten, gefolgt von einer Nummer.
-        referenceName: CUSTOMER_ID
+        description: Customer ID
       - name: TENANT_ID
         type: text
         length: 25
-        description: Der Mandant
+        description: Tenant ID
       - name: FIRST_NAME
         type: text
         length: 60
-        description: Der Firmenname
+        description: Company Name
       - name: CONTACTPERSON
         type: text
         length: 60
-        description: Der primäre Ansprechpartner
+        description: Primary contact person
+      - name: CARRIER_IDENTIFIER
+        type: text
+        length: 10
+        description: Carrier Identifier

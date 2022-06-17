@@ -56,7 +56,7 @@ class ApiContractGeneratorMojoTest {
                 "import lombok.Data;\n" +
                 "\n" +
                 "/**\n" +
-                "* Geschäftskunde\n" +
+                "* Business Customer\n" +
                 "* Version: 1.0\n" +
                 "*/\n" +
                 "@Data\n" +
@@ -64,7 +64,7 @@ class ApiContractGeneratorMojoTest {
                 "public class BusinessCustomer extends Customer {\n" +
                 "\n" +
                 "    /**\n" +
-                "    * Der Firmenname\n" +
+                "    * Comany Name\n" +
                 "    */\n" +
                 "\t@JsonProperty(\"COMPANY\")\n" +
                 "    private String company;\n" +
@@ -86,16 +86,22 @@ class ApiContractGeneratorMojoTest {
                 "public class Customer implements IdAble, CarrierIdentifier {\n" +
                 "\n" +
                 "    /**\n" +
-                "    * Die eindeutige KundenID. Besteht aus einer 2-Zeichen Kennung für den Mandanten, gefolgt von einer Nummer.\n" +
+                "    * Customer ID\n" +
                 "    */\n" +
                 "\t@JsonProperty(\"ID\")\n" +
                 "    private String id;\n" +
                 "\n" +
                 "    /**\n" +
-                "    * Der Mandant\n" +
+                "    * Tenant ID\n" +
                 "    */\n" +
                 "\t@JsonProperty(\"TENANT_ID\")\n" +
                 "    private String tenantId;\n" +
+                "\n" +
+                "    /**\n" +
+                "    * Carrier Identifier\n" +
+                "    */\n" +
+                "\t@JsonProperty(\"CARRIER_IDENTIFIER\")\n" +
+                "    private String carrierIdentifier;\n" +
                 "\n" +
                 "}\n", answer);
 
@@ -110,7 +116,7 @@ class ApiContractGeneratorMojoTest {
                 "import lombok.Data;\n" +
                 "\n" +
                 "/**\n" +
-                "* Privatekunde\n" +
+                "* Private Customer\n" +
                 "* Version: 1.2\n" +
                 "*/\n" +
                 "@Data\n" +
@@ -118,13 +124,13 @@ class ApiContractGeneratorMojoTest {
                 "public class PrivateCustomer extends Customer {\n" +
                 "\n" +
                 "    /**\n" +
-                "    * Der Firmenname\n" +
+                "    * Company Name\n" +
                 "    */\n" +
                 "\t@JsonProperty(\"FIRST_NAME\")\n" +
                 "    private String firstName;\n" +
                 "\n" +
                 "    /**\n" +
-                "    * Der primäre Ansprechpartner\n" +
+                "    * Primary contact person\n" +
                 "    */\n" +
                 "\t@JsonProperty(\"CONTACTPERSON\")\n" +
                 "    private String contactperson;\n" +
