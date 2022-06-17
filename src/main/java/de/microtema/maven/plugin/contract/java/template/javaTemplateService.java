@@ -24,6 +24,8 @@ public class javaTemplateService {
     @SneakyThrows
     public void writeJavaTemplate(String outputDirectory, String packageName, List<EntityDescriptor> entities, List<List<EntityDescriptor>> allEntities, Map<String, String> fieldMapping, List<String> interfaceNames) {
 
+        Set<String> set = new HashSet<>();
+
         for (EntityDescriptor entityDescriptor : entities) {
 
             String extendsClassName = null;
@@ -36,7 +38,9 @@ public class javaTemplateService {
                 extendsClassName = extendsClass.getName();
                 commonFields = extendsClass.getFields();
 
-                writeJavaTemplateImpl(outputDirectory, packageName, entities, fieldMapping, extendsClassName, interfaceNames, commonFields, true);
+                if (set.add(extendsClassName)) {
+                    writeJavaTemplateImpl(outputDirectory, packageName, entities, fieldMapping, extendsClassName, interfaceNames, commonFields, true);
+                }
             }
 
             writeJavaTemplateImpl(outputDirectory, packageName, entities, fieldMapping, extendsClassName, interfaceNames, commonFields, false);

@@ -87,7 +87,7 @@ public class JavaTemplate {
         String packageDirectory = FileUtil.getPackageDirectory(packageName);
 
         String file = String.format("%s%s%s%s.java", outputDirectory, File.separator, packageDirectory, className);
-        System.out.print("Writing file " + file);
+        System.out.println("Writing file " + file);
 
         File outputFile = new File(file);
         FileUtils.writeStringToFile(outputFile, stringBuilder.toString(), Charset.defaultCharset());
