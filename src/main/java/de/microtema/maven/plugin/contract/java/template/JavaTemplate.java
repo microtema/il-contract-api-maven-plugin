@@ -21,6 +21,84 @@ public class JavaTemplate {
 
     public static final String JSON_ANNOTATION = "@JsonProperty";
 
+    public static boolean skipField(boolean isCommonClass, Set<String> commonFields, String name) {
+
+        if (isCommonClass) {
+            return !commonFields.contains(name);
+        } else return commonFields.contains(name);
+    }
+
+    public static void appendDescription(StringBuilder stringBuilder, int padding, String... descriptions) {
+
+        if (descriptions.length == 0) {
+            return;
+        }
+
+        String paddingStr = "";
+
+        while (paddingStr.length() < padding) {
+            paddingStr += " ";
+        }
+
+        stringBuilder.append(paddingStr).append("/**").append(FileUtil.lineSeparator(1));
+        for (String description : descriptions) {
+            stringBuilder.append(paddingStr).append("* ").append(description).append(FileUtil.lineSeparator(1));
+        }
+        stringBuilder.append(paddingStr).append("*/").append(FileUtil.lineSeparator(1));
+    }
+
+    public static String getType(FieldType type) {
+
+        switch (type) {
+            case DATE:
+                return "LocalDateTime";
+            case TEXT:
+                return "String";
+            case NUMBER:
+                return "Integer";
+            case BOOLEAN:
+                return "boolean";
+            default:
+                return "Object";
+        }
+    }
+
+    public static String getFieldName(String snakeWord) {
+
+        String camelWord = snakeWord.replaceAll("_", " ");
+
+        camelWord = WordUtils.capitalizeFully(camelWord);
+
+        camelWord = camelWord.replaceAll(" ", "");
+
+        return WordUtils.uncapitalize(camelWord);
+    }
+
+    private List<String> getImportPackages(List<FieldDescriptor> fieldDescriptors, Set<String> commonFields, boolean isCommonClass) {
+
+        List<String> packages = new ArrayList<>();
+
+        boolean anyMatch = fieldDescriptors.stream()
+                .filter(it -> !skipField(isCommonClass, commonFields, it.getName()))
+                .anyMatch(it -> it.getType() == FieldType.DATE);
+
+        if (anyMatch) {
+            packages.add("java.time.LocalDateTime");
+        }
+
+        return packages;
+    }
+
+    public static String getSimpleClassName(String className) {
+
+        return className.substring(className.lastIndexOf(".") + 1);
+    }
+
+    private StringBuilder appendJsonKey(StringBuilder stringBuilder, String entryKey) {
+
+        return stringBuilder.append(String.format("\t%s(\"%s\")", JSON_ANNOTATION, entryKey));
+    }
+
     public void writeOutJavaFile(String outputDirectory, ClassDescriptor classDescriptor) throws IOException {
 
         String packageName = classDescriptor.getPackageName();
@@ -87,17 +165,10 @@ public class JavaTemplate {
         String packageDirectory = FileUtil.getPackageDirectory(packageName);
 
         String file = String.format("%s%s%s%s.java", outputDirectory, File.separator, packageDirectory, className);
-        System.out.println("Writing file " + file);
+        System.out.println("Writing Java file " + file);
 
         File outputFile = new File(file);
         FileUtils.writeStringToFile(outputFile, stringBuilder.toString(), Charset.defaultCharset());
-    }
-
-    private boolean skipField(boolean isCommonClass, Set<String> commonFields, String name) {
-
-        if (isCommonClass) {
-            return !commonFields.contains(name);
-        } else return commonFields.contains(name);
     }
 
     private String getImplementsOrExtendsClasses(String extendsClassName, List<String> interfaceNames, boolean isCommonClass) {
@@ -112,77 +183,6 @@ public class JavaTemplate {
             return str;
         }
 
-        return " implements " + StringUtils.join(interfaceNames.stream().map(this::getSimpleClassName).collect(Collectors.joining(", ")));
-    }
-
-    private void appendDescription(StringBuilder stringBuilder, int padding, String... descriptions) {
-
-        if (descriptions.length == 0) {
-            return;
-        }
-
-        String paddingStr = "";
-
-        while (paddingStr.length() < padding) {
-            paddingStr += " ";
-        }
-
-        stringBuilder.append(paddingStr).append("/**").append(FileUtil.lineSeparator(1));
-        for (String description : descriptions) {
-            stringBuilder.append(paddingStr).append("* ").append(description).append(FileUtil.lineSeparator(1));
-        }
-        stringBuilder.append(paddingStr).append("*/").append(FileUtil.lineSeparator(1));
-    }
-
-    private List<String> getImportPackages(List<FieldDescriptor> fieldDescriptors, Set<String> commonFields, boolean isCommonClass) {
-
-        List<String> packages = new ArrayList<>();
-
-        boolean anyMatch = fieldDescriptors.stream()
-                .filter(it -> !skipField(isCommonClass, commonFields, it.getName()))
-                .anyMatch(it -> it.getType() == FieldType.DATE);
-
-        if (anyMatch) {
-            packages.add("java.time.LocalDateTime");
-        }
-
-        return packages;
-    }
-
-    private String getType(FieldType type) {
-
-        switch (type) {
-            case DATE:
-                return "LocalDateTime";
-            case TEXT:
-                return "String";
-            case NUMBER:
-                return "Integer";
-            case BOOLEAN:
-                return "boolean";
-            default:
-                return "Object";
-        }
-    }
-
-    private StringBuilder appendJsonKey(StringBuilder stringBuilder, String entryKey) {
-
-        return stringBuilder.append(String.format("\t%s(\"%s\")", JSON_ANNOTATION, entryKey));
-    }
-
-    private String getFieldName(String snakeWord) {
-
-        String camelWord = snakeWord.replaceAll("_", " ");
-
-        camelWord = WordUtils.capitalizeFully(camelWord);
-
-        camelWord = camelWord.replaceAll(" ", "");
-
-        return WordUtils.uncapitalize(camelWord);
-    }
-
-    private String getSimpleClassName(String className) {
-
-        return className.substring(className.lastIndexOf(".") + 1);
+        return " implements " + StringUtils.join(interfaceNames.stream().map(JavaTemplate::getSimpleClassName).collect(Collectors.joining(", ")));
     }
 }

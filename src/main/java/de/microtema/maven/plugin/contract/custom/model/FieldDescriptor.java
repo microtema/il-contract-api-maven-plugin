@@ -12,4 +12,7 @@ public class FieldDescriptor {
     private FieldType type;
 
     private String description;
+
+    public boolean required;
+    private String defaultValue;
 }

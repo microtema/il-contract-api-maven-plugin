@@ -8,6 +8,7 @@ Reducing Boilerplate Code with il-contract-api maven plugin
 * Auto detection commons classes
 * Generate lombok based java beans
 * Custom Field mapping
+* Full API Docs as Markdown template
 
 ## How to use
 

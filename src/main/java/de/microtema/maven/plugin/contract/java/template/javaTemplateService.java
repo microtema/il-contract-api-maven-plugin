@@ -2,6 +2,8 @@ package de.microtema.maven.plugin.contract.java.template;
 
 import de.microtema.maven.plugin.contract.custom.model.EntityDescriptor;
 import de.microtema.maven.plugin.contract.custom.model.FieldDescriptor;
+import de.microtema.maven.plugin.contract.doc.template.DocTemplate;
+import de.microtema.maven.plugin.contract.model.ProjectData;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 
@@ -11,20 +13,21 @@ import java.util.*;
 public class javaTemplateService {
 
     private final JavaTemplate javaTemplate;
+    private final DocTemplate docTemplate;
 
     @SneakyThrows
-    public void writeJavaTemplates(String outputDirectory, String packageName, List<List<EntityDescriptor>> allEntities, Map<String, String> fieldMapping, List<String> interfaceNames) {
+    public void writeJavaTemplates(List<List<EntityDescriptor>> allEntities, ProjectData projectData) {
+
+        Set<String> fileNames = new HashSet<>();
 
         for (List<EntityDescriptor> entities : allEntities) {
 
-            writeJavaTemplate(outputDirectory, packageName, entities, allEntities, fieldMapping, interfaceNames);
+            writeJavaTemplate(entities, allEntities, projectData, fileNames);
         }
     }
 
     @SneakyThrows
-    public void writeJavaTemplate(String outputDirectory, String packageName, List<EntityDescriptor> entities, List<List<EntityDescriptor>> allEntities, Map<String, String> fieldMapping, List<String> interfaceNames) {
-
-        Set<String> set = new HashSet<>();
+    public void writeJavaTemplate(List<EntityDescriptor> entities, List<List<EntityDescriptor>> allEntities, ProjectData projectData, Set<String> set) {
 
         for (EntityDescriptor entityDescriptor : entities) {
 
@@ -39,31 +42,32 @@ public class javaTemplateService {
                 commonFields = extendsClass.getFields();
 
                 if (set.add(extendsClassName)) {
-                    writeJavaTemplateImpl(outputDirectory, packageName, entities, fieldMapping, extendsClassName, interfaceNames, commonFields, true);
+                    writeJavaTemplateImpl(entities, extendsClassName, commonFields, true, projectData);
                 }
             }
 
-            writeJavaTemplateImpl(outputDirectory, packageName, entities, fieldMapping, extendsClassName, interfaceNames, commonFields, false);
+            writeJavaTemplateImpl(entities, extendsClassName, commonFields, false, projectData);
         }
     }
 
     @SneakyThrows
-    public void writeJavaTemplateImpl(String outputDirectory, String packageName, List<EntityDescriptor> entities, Map<String, String> fieldMapping, String extendsClassName, List<String> interfaceNames, Set<String> commonFields, boolean isCommonClass) {
+    public void writeJavaTemplateImpl(List<EntityDescriptor> entities, String extendsClassName, Set<String> commonFields, boolean isCommonClass, ProjectData projectData) {
 
         for (EntityDescriptor entityDescriptor : entities) {
 
             ClassDescriptor classDescriptor = new ClassDescriptor();
 
-            classDescriptor.setPackageName(packageName);
+            classDescriptor.setPackageName(projectData.getPackageName());
             classDescriptor.setEntityDescriptor(entityDescriptor);
-            classDescriptor.setFieldMapping(fieldMapping);
+            classDescriptor.setFieldMapping(projectData.getFieldMapping());
 
             classDescriptor.setExtendsClassName(extendsClassName);
-            classDescriptor.setInterfaceNames(interfaceNames);
+            classDescriptor.setInterfaceNames(projectData.getInterfaceNames());
             classDescriptor.setCommonFields(commonFields);
             classDescriptor.setCommonClass(isCommonClass);
 
-            javaTemplate.writeOutJavaFile(outputDirectory, classDescriptor);
+            javaTemplate.writeOutJavaFile(projectData.getOutputJavaDirectory(), classDescriptor);
+            docTemplate.writeOutDocFile(projectData.getOutputDocDirectory(), classDescriptor);
         }
     }
 
