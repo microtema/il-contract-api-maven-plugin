@@ -9,10 +9,13 @@ public class FieldDescriptor {
 
     private String name;
 
+    private String reference;
+
     private FieldType type;
 
     private String description;
 
     public boolean required;
-    private String defaultValue;
+
+    private int length;
 }

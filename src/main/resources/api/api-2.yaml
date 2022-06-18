@@ -7,6 +7,7 @@ entities:
         type: text
         length: 43
         description: Customer ID
+        referenceName: CUSTOMER_ID
       - name: TENANT_ID
         type: text
         length: 25

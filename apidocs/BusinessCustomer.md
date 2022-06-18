@@ -4,6 +4,8 @@
 
 > Version: 1.0
 
-| Name | Type | Required | Default Value | Description |
-| --- | --- | --- | --- | --- |
-| COMPANY | String | false |  | Comany Name |
+> Extends: [@Customer](Customer.md)
+
+| # | Name | Type | Required | Length | Description |
+| --- | --- | --- | --- | --- | --- |
+| 0| COMPANY | String | false | 60 | Comany Name |
