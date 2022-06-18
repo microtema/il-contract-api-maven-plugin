@@ -12,6 +12,11 @@ Reducing Boilerplate Code with il-contract-api maven plugin
 
 ## How to use
 
+### Resources
+* /resources/api/api.yaml
+* /resources/api/api-2.yaml
+
+### Maven configuration
 ```
 <plugin>
     <groupId>de.microtema</groupId>
