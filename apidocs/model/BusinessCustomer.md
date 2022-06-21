@@ -8,4 +8,4 @@
 
 | # | Name | Type | Required | Length | Description |
 | --- | --- | --- | --- | --- | --- |
-| 0| COMPANY | String | false | 60 | Comany Name |
+| 0| COMPANY | String |  | 60 | Comany Name |

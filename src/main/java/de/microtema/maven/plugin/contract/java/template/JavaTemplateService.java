@@ -10,7 +10,7 @@ import lombok.SneakyThrows;
 import java.util.*;
 
 @RequiredArgsConstructor
-public class javaTemplateService {
+public class JavaTemplateService {
 
     private final JavaTemplate javaTemplate;
     private final DocTemplate docTemplate;

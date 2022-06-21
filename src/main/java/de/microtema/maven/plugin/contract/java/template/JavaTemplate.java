@@ -3,6 +3,7 @@ package de.microtema.maven.plugin.contract.java.template;
 import de.microtema.maven.plugin.contract.custom.model.EntityDescriptor;
 import de.microtema.maven.plugin.contract.custom.model.FieldDescriptor;
 import de.microtema.maven.plugin.contract.custom.model.FieldType;
+import de.microtema.maven.plugin.contract.util.MojoUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.WordUtils;
@@ -40,11 +41,11 @@ public class JavaTemplate {
             paddingStr += " ";
         }
 
-        stringBuilder.append(paddingStr).append("/**").append(FileUtil.lineSeparator(1));
+        stringBuilder.append(paddingStr).append("/**").append(MojoUtil.lineSeparator(1));
         for (String description : descriptions) {
-            stringBuilder.append(paddingStr).append("* ").append(description).append(FileUtil.lineSeparator(1));
+            stringBuilder.append(paddingStr).append("* ").append(description).append(MojoUtil.lineSeparator(1));
         }
-        stringBuilder.append(paddingStr).append("*/").append(FileUtil.lineSeparator(1));
+        stringBuilder.append(paddingStr).append("*/").append(MojoUtil.lineSeparator(1));
     }
 
     public static String getType(FieldType type) {
@@ -112,11 +113,11 @@ public class JavaTemplate {
 
         StringBuilder stringBuilder = new StringBuilder();
 
-        stringBuilder.append("package ").append(packageName).append(";").append(FileUtil.lineSeparator(2));
-        stringBuilder.append("import com.fasterxml.jackson.annotation.JsonProperty;").append(FileUtil.lineSeparator(1));
+        stringBuilder.append("package ").append(packageName).append(";").append(MojoUtil.lineSeparator(2));
+        stringBuilder.append("import com.fasterxml.jackson.annotation.JsonProperty;").append(MojoUtil.lineSeparator(1));
 
         for (String importPackageName : getImportPackages(entityDescriptor.getFields(), commonFields, isCommonClass)) {
-            stringBuilder.append("import ").append(importPackageName).append(";").append(FileUtil.lineSeparator(1));
+            stringBuilder.append("import ").append(importPackageName).append(";").append(MojoUtil.lineSeparator(1));
         }
 
         if (StringUtils.isNotEmpty(extendsClassName) && !isCommonClass) {
@@ -124,24 +125,24 @@ public class JavaTemplate {
         } else {
 
             for (String importClassName : interfaceNames) {
-                stringBuilder.append("import ").append(importClassName).append(";").append(FileUtil.lineSeparator(1));
+                stringBuilder.append("import ").append(importClassName).append(";").append(MojoUtil.lineSeparator(1));
             }
         }
 
         if (StringUtils.isNotEmpty(extendsClassName) && !isCommonClass) {
-            stringBuilder.append("import lombok.EqualsAndHashCode;").append(FileUtil.lineSeparator(1));
+            stringBuilder.append("import lombok.EqualsAndHashCode;").append(MojoUtil.lineSeparator(1));
         }
 
-        stringBuilder.append("import lombok.Data;").append(FileUtil.lineSeparator(2));
+        stringBuilder.append("import lombok.Data;").append(MojoUtil.lineSeparator(2));
 
         if (!isCommonClass) {
             appendDescription(stringBuilder, 0, entityDescriptor.getDescription(), "Version: " + entityDescriptor.getVersion());
         }
         stringBuilder.append("@Data\n");
         if (StringUtils.isNotEmpty(extendsClassName) && !isCommonClass) {
-            stringBuilder.append("@EqualsAndHashCode(callSuper = true)").append(FileUtil.lineSeparator(1));
+            stringBuilder.append("@EqualsAndHashCode(callSuper = true)").append(MojoUtil.lineSeparator(1));
         }
-        stringBuilder.append("public class ").append(className).append(getImplementsOrExtendsClasses(extendsClassName, interfaceNames, isCommonClass)).append(" {").append(FileUtil.lineSeparator(2));
+        stringBuilder.append("public class ").append(className).append(getImplementsOrExtendsClasses(extendsClassName, interfaceNames, isCommonClass)).append(" {").append(MojoUtil.lineSeparator(2));
 
         for (FieldDescriptor fieldDescriptor : entityDescriptor.getFields()) {
 
@@ -157,12 +158,12 @@ public class JavaTemplate {
             String fieldType = getType(fieldDescriptor.getType());
 
             appendDescription(stringBuilder, 4, fieldDescriptor.getDescription());
-            appendJsonKey(stringBuilder, name).append(FileUtil.lineSeparator(1)).append("    private ").append(fieldType).append(" ").append(fieldName).append(";").append(FileUtil.lineSeparator(2));
+            appendJsonKey(stringBuilder, name).append(MojoUtil.lineSeparator(1)).append("    private ").append(fieldType).append(" ").append(fieldName).append(";").append(MojoUtil.lineSeparator(2));
         }
 
-        stringBuilder.append("}").append(FileUtil.lineSeparator(1));
+        stringBuilder.append("}").append(MojoUtil.lineSeparator(1));
 
-        String packageDirectory = FileUtil.getPackageDirectory(packageName);
+        String packageDirectory = MojoUtil.getPackageDirectory(packageName);
 
         String file = String.format("%s%s%s%s.java", outputDirectory, File.separator, packageDirectory, className);
         System.out.println("Writing Java file " + file);

@@ -2,7 +2,7 @@ package de.microtema.maven.plugin.contract;
 
 import de.microtema.maven.plugin.contract.custom.model.EntityDescriptor;
 import de.microtema.maven.plugin.contract.custom.service.CustomApiService;
-import de.microtema.maven.plugin.contract.java.template.javaTemplateService;
+import de.microtema.maven.plugin.contract.java.template.JavaTemplateService;
 import de.microtema.maven.plugin.contract.model.ProjectData;
 import de.microtema.model.converter.util.ClassUtil;
 import lombok.SneakyThrows;
@@ -30,7 +30,7 @@ public class ApiContractGeneratorMojo extends AbstractMojo {
     String outputDir = "./target/generated/src/main";
 
     @Parameter(property = "output-doc-dir")
-    String outputDocDir = "./apidocs";
+    String outputDocDir = "./apidocs/model";
 
     @Parameter(property = "package-name")
     String packageName = "de.microtema.model";
@@ -43,7 +43,7 @@ public class ApiContractGeneratorMojo extends AbstractMojo {
 
     CustomApiService customApiService = ClassUtil.createInstance(CustomApiService.class);
 
-    javaTemplateService javaTemplateService = ClassUtil.createInstance(javaTemplateService.class);
+    JavaTemplateService javaTemplateService = ClassUtil.createInstance(JavaTemplateService.class);
 
     @SneakyThrows
     public void execute() {

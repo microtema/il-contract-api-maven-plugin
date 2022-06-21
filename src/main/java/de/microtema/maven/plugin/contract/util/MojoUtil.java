@@ -1,8 +1,8 @@
-package de.microtema.maven.plugin.contract.java.template;
+package de.microtema.maven.plugin.contract.util;
 
 import java.io.File;
 
-public class FileUtil {
+public class MojoUtil {
 
     public static String getPackageDirectory(String packageName) {
 
@@ -13,6 +13,11 @@ public class FileUtil {
         }
 
         return packageDirectory;
+    }
+
+    public static String cleanUp(String str) {
+
+        return str.replaceAll(File.separator, "");
     }
 
     public static String lineSeparator(int lines) {
@@ -27,4 +32,6 @@ public class FileUtil {
 
         return str;
     }
+
+
 }

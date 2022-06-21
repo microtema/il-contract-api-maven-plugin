@@ -1,6 +1,6 @@
 package de.microtema.maven.plugin.contract;
 
-import de.microtema.maven.plugin.contract.java.template.FileUtil;
+import de.microtema.maven.plugin.contract.util.MojoUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.project.MavenProject;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,7 +34,7 @@ class ApiContractGeneratorMojoTest {
     @Test
     void executeOnNonUpdateFalse() throws Exception {
 
-        String packageDirectory = FileUtil.getPackageDirectory(sut.packageName);
+        String packageDirectory = MojoUtil.getPackageDirectory(sut.packageName);
 
         outputSpecFile = new File(sut.outputDir, packageDirectory);
 

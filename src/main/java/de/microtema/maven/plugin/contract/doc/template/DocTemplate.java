@@ -3,8 +3,8 @@ package de.microtema.maven.plugin.contract.doc.template;
 import de.microtema.maven.plugin.contract.custom.model.EntityDescriptor;
 import de.microtema.maven.plugin.contract.custom.model.FieldDescriptor;
 import de.microtema.maven.plugin.contract.java.template.ClassDescriptor;
-import de.microtema.maven.plugin.contract.java.template.FileUtil;
 import de.microtema.maven.plugin.contract.java.template.JavaTemplate;
+import de.microtema.maven.plugin.contract.util.MojoUtil;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -26,33 +26,33 @@ public class DocTemplate {
 
         StringBuilder stringBuilder = new StringBuilder();
 
-        stringBuilder.append("# ").append(className).append(FileUtil.lineSeparator(2));
+        stringBuilder.append("# ").append(className).append(MojoUtil.lineSeparator(2));
 
         if (isCommonClass) {
-            stringBuilder.append("> ").append(className).append(" Base class").append(FileUtil.lineSeparator(2));
+            stringBuilder.append("> ").append(className).append(" Base class").append(MojoUtil.lineSeparator(2));
 
             List<String> interfaceNames = classDescriptor.getInterfaceNames();
 
             if (!interfaceNames.isEmpty()) {
-                stringBuilder.append("## ").append("Implements: ").append(FileUtil.lineSeparator(1));
+                stringBuilder.append("## ").append("Implements: ").append(MojoUtil.lineSeparator(1));
             }
 
             for (String interfaceName : interfaceNames) {
-                stringBuilder.append("* ").append(interfaceName).append(FileUtil.lineSeparator(1));
+                stringBuilder.append("* ").append(MojoUtil.cleanUp(interfaceName)).append(MojoUtil.lineSeparator(1));
             }
 
             if (!interfaceNames.isEmpty()) {
-                stringBuilder.append(FileUtil.lineSeparator(1));
+                stringBuilder.append(MojoUtil.lineSeparator(1));
             }
 
         } else {
-            stringBuilder.append("> ").append(entityDescriptor.getDescription()).append(FileUtil.lineSeparator(2));
-            stringBuilder.append("> ").append("Version: ").append(entityDescriptor.getVersion()).append(FileUtil.lineSeparator(2));
-            stringBuilder.append("> ").append("Extends: ").append("[@" + extendsClassName + "](" + extendsClassName + ".md)").append(FileUtil.lineSeparator(2));
+            stringBuilder.append("> ").append(entityDescriptor.getDescription()).append(MojoUtil.lineSeparator(2));
+            stringBuilder.append("> ").append("Version: ").append(entityDescriptor.getVersion()).append(MojoUtil.lineSeparator(2));
+            stringBuilder.append("> ").append("Extends: ").append("[@" + extendsClassName + "](" + extendsClassName + ".md)").append(MojoUtil.lineSeparator(2));
         }
 
-        stringBuilder.append("| # | Name | Type | Required | Length | Description |").append(FileUtil.lineSeparator(1));
-        stringBuilder.append("| --- | --- | --- | --- | --- | --- |").append(FileUtil.lineSeparator(1));
+        stringBuilder.append("| # | Name | Type | Required | Length | Description |").append(MojoUtil.lineSeparator(1));
+        stringBuilder.append("| --- | --- | --- | --- | --- | --- |").append(MojoUtil.lineSeparator(1));
 
         int index = 0;
 
@@ -67,9 +67,17 @@ public class DocTemplate {
             String fieldType = JavaTemplate.getType(fieldDescriptor.getType());
             String description = fieldDescriptor.getDescription();
             boolean required = fieldDescriptor.isRequired();
-            int defaultValue =fieldDescriptor.getLength();
+            int lengthValue = fieldDescriptor.getLength();
 
-            stringBuilder.append("| ").append(index++).append("| ").append(name).append(" | ").append(fieldType).append(" | ").append(required).append(" | ").append(defaultValue).append(" | ").append(description).append(" |").append(FileUtil.lineSeparator(1));
+            String requiredValue = required ? "Yes" : "";
+
+            stringBuilder.append("| ").append(index++)
+                    .append("| ").append(name)
+                    .append(" | ").append(fieldType)
+                    .append(" | ").append(requiredValue)
+                    .append(" | ").append(lengthValue > 0 ? lengthValue : "")
+                    .append(" | ").append(description)
+                    .append(" |").append(MojoUtil.lineSeparator(1));
         }
 
         String file = String.format("%s%s%s.md", outputDirectory, File.separator, className);
