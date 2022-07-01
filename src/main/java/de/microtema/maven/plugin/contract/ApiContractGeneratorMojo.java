@@ -67,7 +67,7 @@ public class ApiContractGeneratorMojo extends AbstractMojo {
             return;
         }
 
-        logMessage("Generate GitLab Pipeline for " + appName + " -> " + outputDir);
+        logMessage("Generate API Contract for " + appName + " -> " + outputDir);
 
         List<List<EntityDescriptor>> all = new ArrayList<>();
 
