@@ -12,7 +12,7 @@ import java.util.List;
 
 public class CustomApiService {
 
-   private ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory().disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER));
+    private final ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory().disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER));
 
     @SneakyThrows
     public List<EntityDescriptor> getEntityDescriptors(String fileName) {

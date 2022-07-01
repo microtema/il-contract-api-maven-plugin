@@ -79,7 +79,7 @@ public class ApiContractGeneratorMojo extends AbstractMojo {
 
         } else if (fileOrDir.isDirectory()) {
 
-            File[] files = fileOrDir.listFiles();
+            File[] files = fileOrDir.listFiles(it -> !it.getName().startsWith(".")); // filter out system files like .DS_Store
 
             if (Objects.isNull(files) || files.length == 0) {
 

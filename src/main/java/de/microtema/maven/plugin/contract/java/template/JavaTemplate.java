@@ -43,9 +43,9 @@ public class JavaTemplate {
 
         stringBuilder.append(paddingStr).append("/**").append(MojoUtil.lineSeparator(1));
         for (String description : descriptions) {
-            stringBuilder.append(paddingStr).append("* ").append(description).append(MojoUtil.lineSeparator(1));
+            stringBuilder.append(paddingStr).append(" * ").append(description).append(MojoUtil.lineSeparator(1));
         }
-        stringBuilder.append(paddingStr).append("*/").append(MojoUtil.lineSeparator(1));
+        stringBuilder.append(paddingStr).append(" */").append(MojoUtil.lineSeparator(1));
     }
 
     public static String getType(FieldType type) {

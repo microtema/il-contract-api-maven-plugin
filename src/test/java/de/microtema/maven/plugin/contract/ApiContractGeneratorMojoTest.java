@@ -56,16 +56,16 @@ class ApiContractGeneratorMojoTest {
                 "import lombok.Data;\n" +
                 "\n" +
                 "/**\n" +
-                "* Business Customer\n" +
-                "* Version: 1.0\n" +
-                "*/\n" +
+                " * Business Customer\n" +
+                " * Version: 1.0\n" +
+                " */\n" +
                 "@Data\n" +
                 "@EqualsAndHashCode(callSuper = true)\n" +
                 "public class BusinessCustomer extends Customer {\n" +
                 "\n" +
                 "    /**\n" +
-                "    * Comany Name\n" +
-                "    */\n" +
+                "     * Comany Name\n" +
+                "     */\n" +
                 "\t@JsonProperty(\"COMPANY\")\n" +
                 "    private String company;\n" +
                 "\n" +
@@ -86,20 +86,20 @@ class ApiContractGeneratorMojoTest {
                 "public class Customer implements IdAble, CarrierIdentifier {\n" +
                 "\n" +
                 "    /**\n" +
-                "    * Customer ID\n" +
-                "    */\n" +
+                "     * Customer ID\n" +
+                "     */\n" +
                 "\t@JsonProperty(\"ID\")\n" +
                 "    private String id;\n" +
                 "\n" +
                 "    /**\n" +
-                "    * Tenant ID\n" +
-                "    */\n" +
+                "     * Tenant ID\n" +
+                "     */\n" +
                 "\t@JsonProperty(\"TENANT_ID\")\n" +
                 "    private String tenantId;\n" +
                 "\n" +
                 "    /**\n" +
-                "    * Carrier Identifier\n" +
-                "    */\n" +
+                "     * Carrier Identifier\n" +
+                "     */\n" +
                 "\t@JsonProperty(\"CARRIER_IDENTIFIER\")\n" +
                 "    private String carrierIdentifier;\n" +
                 "\n" +
@@ -116,22 +116,22 @@ class ApiContractGeneratorMojoTest {
                 "import lombok.Data;\n" +
                 "\n" +
                 "/**\n" +
-                "* Private Customer\n" +
-                "* Version: 1.2\n" +
-                "*/\n" +
+                " * Private Customer\n" +
+                " * Version: 1.2\n" +
+                " */\n" +
                 "@Data\n" +
                 "@EqualsAndHashCode(callSuper = true)\n" +
                 "public class PrivateCustomer extends Customer {\n" +
                 "\n" +
                 "    /**\n" +
-                "    * Company Name\n" +
-                "    */\n" +
+                "     * Company Name\n" +
+                "     */\n" +
                 "\t@JsonProperty(\"FIRST_NAME\")\n" +
                 "    private String firstName;\n" +
                 "\n" +
                 "    /**\n" +
-                "    * Primary contact person\n" +
-                "    */\n" +
+                "     * Primary contact person\n" +
+                "     */\n" +
                 "\t@JsonProperty(\"CONTACTPERSON\")\n" +
                 "    private String contactperson;\n" +
                 "\n" +
