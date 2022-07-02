@@ -3,8 +3,8 @@
 > Customer Base class
 
 ## Implements: 
-* de.microtema.commons.model.IdAble
 * de.microtema.commons.model.CarrierIdentifier
+* de.microtema.commons.model.IdAble
 
 | # | Name | Type | Required | Length | Description |
 | --- | --- | --- | --- | --- | --- |

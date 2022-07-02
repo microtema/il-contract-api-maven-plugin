@@ -11,10 +11,7 @@ import org.apache.commons.lang3.text.WordUtils;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -114,26 +111,8 @@ public class JavaTemplate {
         StringBuilder stringBuilder = new StringBuilder();
 
         stringBuilder.append("package ").append(packageName).append(";").append(MojoUtil.lineSeparator(2));
-        stringBuilder.append("import com.fasterxml.jackson.annotation.JsonProperty;").append(MojoUtil.lineSeparator(1));
 
-        for (String importPackageName : getImportPackages(entityDescriptor.getFields(), commonFields, isCommonClass)) {
-            stringBuilder.append("import ").append(importPackageName).append(";").append(MojoUtil.lineSeparator(1));
-        }
-
-        if (StringUtils.isNotEmpty(extendsClassName) && !isCommonClass) {
-            // do not implement interfaces on subclass, due to the common class
-        } else {
-
-            for (String importClassName : interfaceNames) {
-                stringBuilder.append("import ").append(importClassName).append(";").append(MojoUtil.lineSeparator(1));
-            }
-        }
-
-        if (StringUtils.isNotEmpty(extendsClassName) && !isCommonClass) {
-            stringBuilder.append("import lombok.EqualsAndHashCode;").append(MojoUtil.lineSeparator(1));
-        }
-
-        stringBuilder.append("import lombok.Data;").append(MojoUtil.lineSeparator(2));
+        writeOutImports(entityDescriptor, classDescriptor, stringBuilder);
 
         if (!isCommonClass) {
             appendDescription(stringBuilder, 0, entityDescriptor.getDescription(), "Version: " + entityDescriptor.getVersion());
@@ -170,6 +149,47 @@ public class JavaTemplate {
 
         File outputFile = new File(file);
         FileUtils.writeStringToFile(outputFile, stringBuilder.toString(), Charset.defaultCharset());
+    }
+
+    private void writeOutImports(EntityDescriptor entityDescriptor, ClassDescriptor classDescriptor, StringBuilder stringBuilder) {
+
+        String extendsClassName = classDescriptor.getExtendsClassName();
+        List<String> interfaceNames = classDescriptor.getInterfaceNames();
+        boolean isCommonClass = classDescriptor.isCommonClass();
+        Set<String> commonFields = classDescriptor.getCommonFields();
+
+        List<String> imports = new ArrayList<>();
+
+        imports.add("com.fasterxml.jackson.annotation.JsonProperty");
+
+        imports.add("lombok.Data");
+        if (StringUtils.isNotEmpty(extendsClassName) && !isCommonClass) {
+            imports.add("lombok.EqualsAndHashCode");
+        }
+
+        if (StringUtils.isNotEmpty(extendsClassName) && !isCommonClass) {
+            // do not implement interfaces on subclass, due to the common class
+        } else {
+            Collections.sort(interfaceNames);
+            imports.addAll(interfaceNames);
+        }
+
+        List<String> importPackages = getImportPackages(entityDescriptor.getFields(), commonFields, isCommonClass);
+
+        Collections.sort(importPackages);
+
+        imports.addAll(importPackages);
+
+        for (String importName : imports) {
+
+            if (StringUtils.startsWith(importName, "java")) {
+                stringBuilder.append(MojoUtil.lineSeparator(1));
+            }
+
+            stringBuilder.append("import ").append(importName).append(";").append(MojoUtil.lineSeparator(1));
+        }
+
+        stringBuilder.append(MojoUtil.lineSeparator(1));
     }
 
     private String getImplementsOrExtendsClasses(String extendsClassName, List<String> interfaceNames, boolean isCommonClass) {

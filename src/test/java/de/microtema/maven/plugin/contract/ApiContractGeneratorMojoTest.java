@@ -52,8 +52,8 @@ class ApiContractGeneratorMojoTest {
         assertEquals("package de.microtema.model;\n" +
                 "\n" +
                 "import com.fasterxml.jackson.annotation.JsonProperty;\n" +
-                "import lombok.EqualsAndHashCode;\n" +
                 "import lombok.Data;\n" +
+                "import lombok.EqualsAndHashCode;\n" +
                 "\n" +
                 "/**\n" +
                 " * Business Customer\n" +
@@ -78,12 +78,12 @@ class ApiContractGeneratorMojoTest {
         assertEquals("package de.microtema.model;\n" +
                 "\n" +
                 "import com.fasterxml.jackson.annotation.JsonProperty;\n" +
-                "import de.microtema.commons.model.IdAble;\n" +
-                "import de.microtema.commons.model.CarrierIdentifier;\n" +
                 "import lombok.Data;\n" +
+                "import de.microtema.commons.model.CarrierIdentifier;\n" +
+                "import de.microtema.commons.model.IdAble;\n" +
                 "\n" +
                 "@Data\n" +
-                "public class Customer implements IdAble, CarrierIdentifier {\n" +
+                "public class Customer implements CarrierIdentifier, IdAble {\n" +
                 "\n" +
                 "    /**\n" +
                 "     * Customer ID\n" +
@@ -112,8 +112,8 @@ class ApiContractGeneratorMojoTest {
         assertEquals("package de.microtema.model;\n" +
                 "\n" +
                 "import com.fasterxml.jackson.annotation.JsonProperty;\n" +
-                "import lombok.EqualsAndHashCode;\n" +
                 "import lombok.Data;\n" +
+                "import lombok.EqualsAndHashCode;\n" +
                 "\n" +
                 "/**\n" +
                 " * Private Customer\n" +
