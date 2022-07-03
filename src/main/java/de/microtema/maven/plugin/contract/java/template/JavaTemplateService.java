@@ -6,6 +6,7 @@ import de.microtema.maven.plugin.contract.doc.template.DocTemplate;
 import de.microtema.maven.plugin.contract.model.ProjectData;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 
@@ -29,7 +30,13 @@ public class JavaTemplateService {
     @SneakyThrows
     public void writeJavaTemplate(List<EntityDescriptor> entities, List<List<EntityDescriptor>> allEntities, ProjectData projectData, Set<String> set) {
 
+        String domainName = projectData.getDomainName();
+
         for (EntityDescriptor entityDescriptor : entities) {
+
+            if (allEntities.size() == 1) {
+                entities.forEach(it -> it.setName(Optional.ofNullable(domainName).orElse(it.getName())));
+            }
 
             String extendsClassName = null;
             Set<String> commonFields = new HashSet<>();
@@ -38,7 +45,7 @@ public class JavaTemplateService {
 
             if (Objects.nonNull(extendsClass)) {
 
-                extendsClassName = extendsClass.getName();
+                extendsClassName = Optional.ofNullable(domainName).orElse(extendsClass.getName());
                 commonFields = extendsClass.getFields();
 
                 if (set.add(extendsClassName)) {
@@ -53,6 +60,8 @@ public class JavaTemplateService {
     @SneakyThrows
     public void writeJavaTemplateImpl(List<EntityDescriptor> entities, String extendsClassName, Set<String> commonFields, boolean isCommonClass, ProjectData projectData) {
 
+        String domainName = projectData.getDomainName();
+
         for (EntityDescriptor entityDescriptor : entities) {
 
             ClassDescriptor classDescriptor = new ClassDescriptor();
@@ -62,6 +71,11 @@ public class JavaTemplateService {
             classDescriptor.setFieldMapping(projectData.getFieldMapping());
 
             classDescriptor.setExtendsClassName(extendsClassName);
+
+            if (StringUtils.isNotEmpty(extendsClassName)) {
+                classDescriptor.setExtendsClassName(domainName);
+            }
+
             classDescriptor.setInterfaceNames(projectData.getInterfaceNames());
             classDescriptor.setCommonFields(commonFields);
             classDescriptor.setCommonClass(isCommonClass);

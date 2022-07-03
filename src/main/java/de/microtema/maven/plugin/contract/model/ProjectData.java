@@ -17,4 +17,6 @@ public class ProjectData {
     private Map<String, String> fieldMapping;
 
     private List<String> interfaceNames;
+
+    private String domainName;
 }

@@ -41,6 +41,9 @@ public class ApiContractGeneratorMojo extends AbstractMojo {
     @Parameter(property = "field-mapping")
     Map<String, String> fieldMapping = new HashMap<>();
 
+    @Parameter(property = "domain-name")
+    String domainName;
+
     CustomApiService customApiService = ClassUtil.createInstance(CustomApiService.class);
 
     JavaTemplateService javaTemplateService = ClassUtil.createInstance(JavaTemplateService.class);
@@ -98,12 +101,13 @@ public class ApiContractGeneratorMojo extends AbstractMojo {
 
         ProjectData projectData = new ProjectData();
 
-        projectData.setPackageName(this.packageName);
-        projectData.setInterfaceNames(this.implementations);
-        projectData.setFieldMapping(this.fieldMapping);
+        projectData.setPackageName(packageName);
+        projectData.setInterfaceNames(implementations);
+        projectData.setFieldMapping(fieldMapping);
 
-        projectData.setOutputJavaDirectory(this.outputDir);
-        projectData.setOutputDocDirectory(this.outputDocDir);
+        projectData.setOutputJavaDirectory(outputDir);
+        projectData.setOutputDocDirectory(outputDocDir);
+        projectData.setDomainName(domainName);
 
         javaTemplateService.writeJavaTemplates(all, projectData);
     }

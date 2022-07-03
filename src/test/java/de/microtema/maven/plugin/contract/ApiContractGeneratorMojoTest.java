@@ -40,6 +40,7 @@ class ApiContractGeneratorMojoTest {
 
         sut.implementations.add("de.microtema.commons.model.IdAble");
         sut.implementations.add("de.microtema.commons.model.CarrierIdentifier");
+        sut.domainName = "Customer";
 
         sut.execute();
 
