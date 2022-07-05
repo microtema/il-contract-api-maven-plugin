@@ -7,6 +7,7 @@ import de.microtema.maven.plugin.contract.model.ProjectData;
 import de.microtema.model.converter.util.ClassUtil;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.text.WordUtils;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -16,6 +17,7 @@ import org.apache.maven.project.MavenProject;
 
 import java.io.File;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Mojo(name = "generate", defaultPhase = LifecyclePhase.COMPILE)
 public class ApiContractGeneratorMojo extends AbstractMojo {
@@ -102,12 +104,12 @@ public class ApiContractGeneratorMojo extends AbstractMojo {
         ProjectData projectData = new ProjectData();
 
         projectData.setPackageName(packageName);
-        projectData.setInterfaceNames(implementations);
+        projectData.setInterfaceNames(implementations.stream().map(StringUtils::trim).collect(Collectors.toList()));
         projectData.setFieldMapping(fieldMapping);
 
         projectData.setOutputJavaDirectory(outputDir);
         projectData.setOutputDocDirectory(outputDocDir);
-        projectData.setDomainName(domainName);
+        projectData.setDomainName(Optional.ofNullable(domainName).map(WordUtils::capitalize).orElse(null));
 
         javaTemplateService.writeJavaTemplates(all, projectData);
     }
