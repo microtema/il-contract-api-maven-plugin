@@ -134,7 +134,6 @@ public class JavaTemplate {
         Map<String, String> fieldMapping = classDescriptor.getFieldMapping();
         String extendsClassName = classDescriptor.getExtendsClassName();
         List<String> interfaceNames = classDescriptor.getInterfaceNames();
-        List<String> imports = classDescriptor.getImports();
         boolean isCommonClass = classDescriptor.isCommonClass();
         String className = isCommonClass ? extendsClassName : entityDescriptor.getName();
         Set<String> commonFields = classDescriptor.getCommonFields();
