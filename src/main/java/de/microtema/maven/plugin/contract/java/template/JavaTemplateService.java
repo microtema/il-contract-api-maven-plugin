@@ -76,6 +76,7 @@ public class JavaTemplateService {
                 classDescriptor.setExtendsClassName(domainName);
             }
 
+            classDescriptor.setImports(projectData.getImports());
             classDescriptor.setInterfaceNames(projectData.getInterfaceNames());
             classDescriptor.setCommonFields(commonFields);
             classDescriptor.setCommonClass(isCommonClass);

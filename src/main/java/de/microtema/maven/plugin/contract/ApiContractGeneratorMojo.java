@@ -40,6 +40,12 @@ public class ApiContractGeneratorMojo extends AbstractMojo {
     @Parameter(property = "implementations")
     List<String> implementations = new ArrayList<>();
 
+    @Parameter(property = "imports")
+    List<String> imports = new ArrayList<>();
+
+    @Parameter(property = "excludes")
+    Set<String> excludes = new HashSet<>();
+
     @Parameter(property = "field-mapping")
     Map<String, String> fieldMapping = new HashMap<>();
 
@@ -101,10 +107,13 @@ public class ApiContractGeneratorMojo extends AbstractMojo {
             }
         }
 
+        excludesProperties(all);
+
         ProjectData projectData = new ProjectData();
 
         projectData.setPackageName(packageName);
         projectData.setInterfaceNames(implementations.stream().map(StringUtils::trim).collect(Collectors.toList()));
+        projectData.setImports(imports.stream().map(StringUtils::trim).collect(Collectors.toList()));
         projectData.setFieldMapping(fieldMapping);
 
         projectData.setOutputJavaDirectory(outputDir);
@@ -112,6 +121,15 @@ public class ApiContractGeneratorMojo extends AbstractMojo {
         projectData.setDomainName(Optional.ofNullable(domainName).map(WordUtils::capitalize).orElse(null));
 
         javaTemplateService.writeJavaTemplates(all, projectData);
+    }
+
+    private void excludesProperties(List<List<EntityDescriptor>> all) {
+
+        excludes = excludes.stream().map(String::trim).collect(Collectors.toSet());
+
+        all.stream()
+                .flatMap(Collection::stream)
+                .forEach(it -> it.getFields().removeIf(f -> excludes.contains(f.getName())));
     }
 
     void logMessage(String message) {

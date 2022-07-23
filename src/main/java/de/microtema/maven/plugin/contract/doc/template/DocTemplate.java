@@ -6,6 +6,7 @@ import de.microtema.maven.plugin.contract.java.template.ClassDescriptor;
 import de.microtema.maven.plugin.contract.java.template.JavaTemplate;
 import de.microtema.maven.plugin.contract.util.MojoUtil;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -48,7 +49,9 @@ public class DocTemplate {
         } else {
             stringBuilder.append("> ").append(entityDescriptor.getDescription()).append(MojoUtil.lineSeparator(2));
             stringBuilder.append("> ").append("Version: ").append(entityDescriptor.getVersion()).append(MojoUtil.lineSeparator(2));
-            stringBuilder.append("> ").append("Extends: ").append("[@" + extendsClassName + "](" + extendsClassName + ".md)").append(MojoUtil.lineSeparator(2));
+            if (StringUtils.isNotEmpty(extendsClassName)) {
+                stringBuilder.append("> ").append("Extends: ").append("[@").append(extendsClassName).append("](").append(extendsClassName).append(".md)").append(MojoUtil.lineSeparator(2));
+            }
         }
 
         stringBuilder.append("| # | Name | Type | Required | Length | Description |").append(MojoUtil.lineSeparator(1));

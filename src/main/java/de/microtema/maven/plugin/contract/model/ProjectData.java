@@ -18,5 +18,7 @@ public class ProjectData {
 
     private List<String> interfaceNames;
 
+    private List<String> imports;
+
     private String domainName;
 }

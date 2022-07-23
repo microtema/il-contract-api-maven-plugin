@@ -20,6 +20,8 @@ public class ClassDescriptor {
 
     private List<String> interfaceNames;
 
+    private List<String> imports;
+
     private Set<String> commonFields;
 
     private boolean commonClass;
