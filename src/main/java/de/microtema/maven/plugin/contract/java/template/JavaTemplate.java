@@ -68,7 +68,7 @@ public class JavaTemplate {
             case NUMBER:
                 return "Integer";
             case BOOLEAN:
-                return "boolean";
+                return "Boolean";
             default:
                 return "Object";
         }
