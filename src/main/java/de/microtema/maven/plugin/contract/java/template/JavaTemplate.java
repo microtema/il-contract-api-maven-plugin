@@ -66,7 +66,7 @@ public class JavaTemplate {
             case TEXT:
                 return "String";
             case NUMBER:
-                return "Integer";
+                return "Long";
             case BOOLEAN:
                 return "Boolean";
             default:
