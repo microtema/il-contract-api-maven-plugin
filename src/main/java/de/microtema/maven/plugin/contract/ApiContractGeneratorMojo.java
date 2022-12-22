@@ -47,7 +47,7 @@ public class ApiContractGeneratorMojo extends AbstractMojo {
     Set<String> excludes = new HashSet<>();
 
     @Parameter(property = "field-mapping")
-    Map<String, String> fieldMapping = new HashMap<>();
+    Set<String> fieldMapping = new HashSet<>();
 
     @Parameter(property = "domain-name")
     String domainName;
@@ -114,7 +114,7 @@ public class ApiContractGeneratorMojo extends AbstractMojo {
         projectData.setPackageName(packageName);
         projectData.setInterfaceNames(implementations.stream().map(StringUtils::trim).collect(Collectors.toList()));
         projectData.setImports(imports.stream().map(StringUtils::trim).collect(Collectors.toList()));
-        projectData.setFieldMapping(fieldMapping);
+        projectData.setFieldMapping(streamConvert(fieldMapping));
 
         projectData.setOutputJavaDirectory(outputDir);
         projectData.setOutputDocDirectory(outputDocDir);
@@ -130,6 +130,18 @@ public class ApiContractGeneratorMojo extends AbstractMojo {
         all.stream()
                 .flatMap(Collection::stream)
                 .forEach(it -> it.getFields().removeIf(f -> excludes.contains(f.getName())));
+    }
+
+    public Map<String, String> streamConvert(Set<String> properties) {
+        return properties.stream()
+                .filter(StringUtils::isNotEmpty)
+                .map(it -> it.split("="))
+                .collect(
+                        Collectors.toMap(
+                                it -> it[0].trim(),
+                                it -> it[1].trim(),
+                                (prev, next) -> next, HashMap::new
+                        ));
     }
 
     void logMessage(String message) {
