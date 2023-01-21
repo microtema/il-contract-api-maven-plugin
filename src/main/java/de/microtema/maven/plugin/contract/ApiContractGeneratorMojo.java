@@ -136,6 +136,12 @@ public class ApiContractGeneratorMojo extends AbstractMojo {
         return properties.stream()
                 .filter(StringUtils::isNotEmpty)
                 .map(it -> it.split("="))
+                .filter(it -> {
+                    if (it.length == 1) {
+                        logMessage("Invalid entry:" + it[0]);
+                    }
+                    return true;
+                })
                 .collect(
                         Collectors.toMap(
                                 it -> it[0].trim(),
