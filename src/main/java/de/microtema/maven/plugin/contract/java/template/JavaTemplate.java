@@ -40,9 +40,63 @@ public class JavaTemplate {
 
         stringBuilder.append(paddingStr).append("/**").append(MojoUtil.lineSeparator(1));
         for (String description : descriptions) {
-            stringBuilder.append(paddingStr).append(" * ").append(description).append(MojoUtil.lineSeparator(1));
+            wrapLongString(stringBuilder, paddingStr, description.trim(), 100, true);
         }
         stringBuilder.append(paddingStr).append(" */").append(MojoUtil.lineSeparator(1));
+    }
+
+    public static void wrapLongString(StringBuilder stringBuilder, String paddingStr, String str, int wrapLength, boolean wrapLongWords) {
+        if (str == null) {
+            return;
+        }
+
+        if (wrapLength < 1) {
+            wrapLength = 1;
+        }
+        int inputLineLength = str.length();
+        int offset = 0;
+
+        while (offset < inputLineLength) {
+            if (str.charAt(offset) == ' ') {
+                offset++;
+                continue;
+            }
+            // only last line without leading spaces is left
+            if (inputLineLength - offset <= wrapLength) {
+                break;
+            }
+            int spaceToWrapAt = str.lastIndexOf(' ', wrapLength + offset);
+
+            if (spaceToWrapAt >= offset) {
+                // normal case
+                stringBuilder.append(paddingStr).append(" * ").append(str, offset, spaceToWrapAt);
+                stringBuilder.append(MojoUtil.lineSeparator(1));
+                offset = spaceToWrapAt + 1;
+
+            } else {
+                // really long word or URL
+                if (wrapLongWords) {
+                    // wrap really long word one line at a time
+                    stringBuilder.append(paddingStr).append(" * ").append(str, offset, wrapLength + offset);
+                    stringBuilder.append(MojoUtil.lineSeparator(1));
+                    offset += wrapLength;
+                } else {
+                    // do not wrap really long word, just extend beyond limit
+                    spaceToWrapAt = str.indexOf(' ', wrapLength + offset);
+                    if (spaceToWrapAt >= 0) {
+                        stringBuilder.append(paddingStr).append(" * ").append(str, offset, spaceToWrapAt);
+                        stringBuilder.append(MojoUtil.lineSeparator(1));
+                        offset = spaceToWrapAt + 1;
+                    } else {
+                        stringBuilder.append(paddingStr).append(" * ").append(str.substring(offset));
+                        offset = inputLineLength;
+                    }
+                }
+            }
+        }
+
+        // Whatever is left in line is short enough to just pass through
+        stringBuilder.append(paddingStr).append(" * ").append(str.substring(offset)).append(MojoUtil.lineSeparator(1));
     }
 
     public static void appendClassDescription(StringBuilder stringBuilder, String... descriptions) {
@@ -114,6 +168,15 @@ public class JavaTemplate {
         return stringBuilder.append(String.format("\t%s(\"%s\")", JSON_ANNOTATION, entryKey));
     }
 
+    private StringBuilder appendNotNullAnnotation(StringBuilder stringBuilder, String entryKey, boolean required) {
+
+        if (!required) {
+            return stringBuilder;
+        }
+
+        return stringBuilder.append(String.format("\t@NotNull(message = \"[%s] may not be null\")", entryKey)).append(MojoUtil.lineSeparator(1));
+    }
+
     private StringBuilder appendJsonDeserialize(StringBuilder stringBuilder, String fieldType, String typeVariant) {
 
         if (StringUtils.isEmpty(typeVariant)) {
@@ -146,7 +209,7 @@ public class JavaTemplate {
         writeOutImports(entityDescriptor, classDescriptor, stringBuilder);
 
         if (!isCommonClass) {
-            appendDescription(stringBuilder, 0, entityDescriptor.getDescription(), "Version: " + entityDescriptor.getVersion());
+            appendDescription(stringBuilder, 0, entityDescriptor.getDescription(), "", "Version: " + entityDescriptor.getVersion());
         }
         stringBuilder.append("@Data\n");
         if (StringUtils.isNotEmpty(extendsClassName) && !isCommonClass) {
@@ -169,6 +232,7 @@ public class JavaTemplate {
 
             appendDescription(stringBuilder, 4, fieldDescriptor.getDescription());
             appendJsonKey(stringBuilder, name).append(MojoUtil.lineSeparator(1));
+            appendNotNullAnnotation(stringBuilder, name, fieldDescriptor.isRequired());
             appendJsonDeserialize(stringBuilder, fieldType, fieldDescriptor.getTypeVariant());
             stringBuilder.append("    private ").append(fieldType).append(" ").append(fieldName).append(";").append(MojoUtil.lineSeparator(2));
         }
@@ -199,6 +263,14 @@ public class JavaTemplate {
         imports.add("com.fasterxml.jackson.annotation.JsonProperty");
         if (supportsJsonDeserialize) {
             imports.add("com.fasterxml.jackson.databind.annotation.JsonDeserialize");
+        }
+
+        boolean anyMatch = entityDescriptor.getFields().stream()
+                .filter(it -> !skipField(isCommonClass, commonFields, it.getName()))
+                .anyMatch(FieldDescriptor::isRequired);
+
+        if (anyMatch) {
+            imports.add("jakarta.validation.constraints.NotNull");
         }
 
         imports.add("lombok.Data");

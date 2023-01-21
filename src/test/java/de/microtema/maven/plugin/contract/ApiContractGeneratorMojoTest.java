@@ -61,6 +61,7 @@ class ApiContractGeneratorMojoTest {
                 "\n" +
                 "/**\n" +
                 " * Business Customer\n" +
+                " * \n" +
                 " * Version: 1.0\n" +
                 " */\n" +
                 "@Data\n" +
@@ -127,6 +128,7 @@ class ApiContractGeneratorMojoTest {
                 "\n" +
                 "/**\n" +
                 " * Private Customer\n" +
+                " * \n" +
                 " * Version: 1.2\n" +
                 " */\n" +
                 "@Data\n" +
