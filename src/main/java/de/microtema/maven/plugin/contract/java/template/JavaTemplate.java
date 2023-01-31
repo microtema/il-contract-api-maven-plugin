@@ -143,14 +143,6 @@ public class JavaTemplate {
 
         boolean anyMatch = fieldDescriptors.stream()
                 .filter(it -> !skipField(isCommonClass, commonFields, it.getName()))
-                .anyMatch(it -> it.getType() == FieldType.DATE && StringUtils.equalsIgnoreCase(it.getTypeVariant(), "unixts_seconds"));
-
-        if (anyMatch) {
-            classImports.stream().filter(it -> StringUtils.contains(it, "EpochTimeSecondsToLocalDateTimeDeserializer")).forEach(imports::add);
-        }
-
-        anyMatch = fieldDescriptors.stream()
-                .filter(it -> !skipField(isCommonClass, commonFields, it.getName()))
                 .anyMatch(it -> it.getType() == FieldType.DATE);
 
         if (anyMatch) {
@@ -181,10 +173,6 @@ public class JavaTemplate {
 
         if (StringUtils.isEmpty(typeVariant)) {
             return stringBuilder;
-        }
-
-        if (StringUtils.equals(fieldType, "LocalDateTime") && StringUtils.equals(typeVariant, "unixts_seconds")) {
-            stringBuilder.append("    ").append("@JsonDeserialize(using = EpochTimeSecondsToLocalDateTimeDeserializer.class)").append(MojoUtil.lineSeparator(1));
         }
 
         return stringBuilder;
@@ -258,12 +246,7 @@ public class JavaTemplate {
 
         List<String> imports = new ArrayList<>();
 
-        boolean supportsJsonDeserialize = supportsJsonDeserialize(entityDescriptor.getFields(), commonFields, isCommonClass);
-
         imports.add("com.fasterxml.jackson.annotation.JsonProperty");
-        if (supportsJsonDeserialize) {
-            imports.add("com.fasterxml.jackson.databind.annotation.JsonDeserialize");
-        }
 
         boolean anyMatch = entityDescriptor.getFields().stream()
                 .filter(it -> !skipField(isCommonClass, commonFields, it.getName()))
