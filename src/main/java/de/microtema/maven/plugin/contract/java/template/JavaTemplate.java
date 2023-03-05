@@ -40,7 +40,7 @@ public class JavaTemplate {
 
         stringBuilder.append(paddingStr).append("/**").append(MojoUtil.lineSeparator(1));
         for (String description : descriptions) {
-            wrapLongString(stringBuilder, paddingStr, description.trim(), 100, true);
+            wrapLongString(stringBuilder, paddingStr, StringUtils.trim(description), 100, true);
         }
         stringBuilder.append(paddingStr).append(" */").append(MojoUtil.lineSeparator(1));
     }

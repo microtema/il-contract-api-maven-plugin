@@ -4,6 +4,7 @@ import de.microtema.maven.plugin.contract.custom.model.EntityDescriptor;
 import de.microtema.maven.plugin.contract.custom.service.CustomApiService;
 import de.microtema.maven.plugin.contract.java.template.JavaTemplateService;
 import de.microtema.maven.plugin.contract.model.ProjectData;
+import de.microtema.maven.plugin.contract.util.MojoUtil;
 import de.microtema.model.converter.util.ClassUtil;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
@@ -119,6 +120,7 @@ public class ApiContractGeneratorMojo extends AbstractMojo {
         projectData.setOutputJavaDirectory(outputDir);
         projectData.setOutputDocDirectory(outputDocDir);
         projectData.setDomainName(Optional.ofNullable(domainName).map(WordUtils::capitalize).orElse(null));
+        projectData.setTemplateType(MojoUtil.getTemplateType(project.getBasedir()));
 
         javaTemplateService.writeJavaTemplates(all, projectData);
     }

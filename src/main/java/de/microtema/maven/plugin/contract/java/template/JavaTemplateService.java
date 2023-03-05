@@ -2,7 +2,9 @@ package de.microtema.maven.plugin.contract.java.template;
 
 import de.microtema.maven.plugin.contract.custom.model.EntityDescriptor;
 import de.microtema.maven.plugin.contract.custom.model.FieldDescriptor;
+import de.microtema.maven.plugin.contract.doc.template.AsciiDocTemplate;
 import de.microtema.maven.plugin.contract.doc.template.DocTemplate;
+import de.microtema.maven.plugin.contract.doc.template.MDDocTemplate;
 import de.microtema.maven.plugin.contract.model.ProjectData;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -14,7 +16,17 @@ import java.util.*;
 public class JavaTemplateService {
 
     private final JavaTemplate javaTemplate;
-    private final DocTemplate docTemplate;
+    private final MDDocTemplate MDDocTemplate;
+    private final AsciiDocTemplate asciiDocTemplate;
+
+    private DocTemplate getDocTemplate(String templateType) {
+
+        if (asciiDocTemplate.access(templateType)) {
+            return asciiDocTemplate;
+        }
+
+        return MDDocTemplate;
+    }
 
     @SneakyThrows
     public void writeJavaTemplates(List<List<EntityDescriptor>> allEntities, ProjectData projectData) {
@@ -62,6 +74,8 @@ public class JavaTemplateService {
 
         String domainName = projectData.getDomainName();
 
+        DocTemplate docTemplate = getDocTemplate(projectData.getTemplateType());
+
         for (EntityDescriptor entityDescriptor : entities) {
 
             ClassDescriptor classDescriptor = new ClassDescriptor();
@@ -82,6 +96,7 @@ public class JavaTemplateService {
             classDescriptor.setCommonClass(isCommonClass);
 
             javaTemplate.writeOutJavaFile(projectData.getOutputJavaDirectory(), classDescriptor);
+
             docTemplate.writeOutDocFile(projectData.getOutputDocDirectory(), classDescriptor);
         }
     }

@@ -21,4 +21,6 @@ public class ProjectData {
     private List<String> imports;
 
     private String domainName;
+
+    private String templateType;
 }
